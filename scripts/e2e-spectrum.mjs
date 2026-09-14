@@ -9,7 +9,7 @@ import { assert, connect, rejects, req, settle } from './e2e-lib.mjs';
  * out of that file and fails loudly if the two ever disagree, which is exactly
  * what happened when the bands were retuned.
  */
-const pointsFor = (d) => (d <= 2 ? 4 : d <= 6 ? 3 : d <= 12 ? 2 : d <= 20 ? 1 : 0);
+const pointsFor = (d) => (d <= 1 ? 4 : d <= 4 ? 3 : d <= 9 ? 2 : d <= 16 ? 1 : 0);
 
 {
   const src = readFileSync(new URL('../shared/spectrum/logic.ts', import.meta.url), 'utf8');

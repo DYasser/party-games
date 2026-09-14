@@ -96,12 +96,12 @@ describe('startGame / startRound', () => {
    * If the scoring changes, the picture must change with it — this test is the
    * tripwire that says so.
    */
-  it('scores by distance in four tight bands: 2, 6, 12, 20', () => {
+  it('scores by distance in four tight bands: 1, 4, 9, 16', () => {
     const bands: Array<[number, number]> = [
-      [2, 4],
-      [6, 3],
-      [12, 2],
-      [20, 1],
+      [1, 4],
+      [4, 3],
+      [9, 2],
+      [16, 1],
     ];
     for (const [reach, points] of bands) {
       expect(pointsForDistance(reach)).toBe(points);
@@ -111,7 +111,7 @@ describe('startGame / startRound', () => {
     }
     expect(pointsForDistance(0)).toBe(4);
     // Past the last band a guess is worth nothing: most of the scale is dead.
-    expect(pointsForDistance(21)).toBe(0);
+    expect(pointsForDistance(17)).toBe(0);
     expect(pointsForDistance(100)).toBe(0);
   });
 
@@ -195,7 +195,7 @@ describe('guessing', () => {
     const target = s.round!.target;
     const [g1, g2, g3] = s.round!.guesserIds;
     let n = lockGuess(setGuess(s, g1, target), g1, T0); // exact hit: 4 points
-    n = lockGuess(setGuess(n, g2, Math.min(100, target + 10)), g2, T0); // 2 points (or fewer if clamped)
+    n = lockGuess(setGuess(n, g2, Math.min(100, target + 10)), g2, T0); // 1 point (or fewer if clamped)
     expect(n.phase).toBe('guessing');
     n = lockGuess(setGuess(n, g3, target > 50 ? 0 : 100), g3, T0 + 5000); // 0 points (distance >= 50)
     expect(n.phase).toBe('reveal');
@@ -239,14 +239,14 @@ describe('guessing', () => {
 describe('scoring table', () => {
   it('maps distance to points', () => {
     expect(pointsForDistance(0)).toBe(4);
-    expect(pointsForDistance(2)).toBe(4);
-    expect(pointsForDistance(-3)).toBe(3);
-    expect(pointsForDistance(6)).toBe(3);
-    expect(pointsForDistance(7)).toBe(2);
-    expect(pointsForDistance(12)).toBe(2);
-    expect(pointsForDistance(13)).toBe(1);
-    expect(pointsForDistance(20)).toBe(1);
-    expect(pointsForDistance(21)).toBe(0);
+    expect(pointsForDistance(1)).toBe(4);
+    expect(pointsForDistance(-2)).toBe(3);
+    expect(pointsForDistance(4)).toBe(3);
+    expect(pointsForDistance(5)).toBe(2);
+    expect(pointsForDistance(9)).toBe(2);
+    expect(pointsForDistance(10)).toBe(1);
+    expect(pointsForDistance(16)).toBe(1);
+    expect(pointsForDistance(17)).toBe(0);
     expect(pointsForDistance(100)).toBe(0);
   });
 });

@@ -16,10 +16,10 @@ export interface BarMarker {
  * away from the rules.
  */
 const BANDS = [
-  { points: 4, reach: 2 },
-  { points: 3, reach: 6 },
-  { points: 2, reach: 12 },
-  { points: 1, reach: 20 },
+  { points: 4, reach: 1 },
+  { points: 3, reach: 4 },
+  { points: 2, reach: 9 },
+  { points: 1, reach: 16 },
 ] as const;
 
 interface Props {

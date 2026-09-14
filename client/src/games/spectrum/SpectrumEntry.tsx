@@ -29,8 +29,8 @@ export default function SpectrumEntry() {
             adjusting until you lock.
           </>,
           <>
-            On the reveal, the closer your needle, the better: within 2 scores 4 points, within 6 scores 3, within 12
-            scores 2, and within 20 scores 1. Miss by more than 20 and you score nothing, so the bands are tight and a
+            On the reveal, the closer your needle, the better: within 1 scores 4 points, within 4 scores 3, within 9
+            scores 2, and within 16 scores 1. Miss by more than 16 and you score nothing, so the bands are tight and a
             vague clue is worth very little.
           </>,
           <>
