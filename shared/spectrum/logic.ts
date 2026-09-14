@@ -45,14 +45,19 @@ export function setSettings(state: SpectrumState, rounds: number): SpectrumState
   return { ...state, settings: { ...state.settings, rounds } };
 }
 
-/** Points for a guess at the given distance from the target. */
+/**
+ * Points for a guess at the given distance from the target.
+ *
+ * Four bands, deliberately tight: the bullseye is 2 wide and scoring stops at
+ * 20, so a little over a third of the scale pays anything at all. A clue has to
+ * be genuinely precise to land +4, and a vague one scores nothing.
+ */
 export function pointsForDistance(distance: number): number {
   const d = Math.abs(distance);
-  if (d <= 3) return 5;
-  if (d <= 8) return 4;
-  if (d <= 15) return 3;
-  if (d <= 25) return 2;
-  if (d <= 35) return 1;
+  if (d <= 2) return 4;
+  if (d <= 6) return 3;
+  if (d <= 12) return 2;
+  if (d <= 20) return 1;
   return 0;
 }
 

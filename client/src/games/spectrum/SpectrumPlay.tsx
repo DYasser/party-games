@@ -259,7 +259,7 @@ function Guesser({
 function BandKey() {
   return (
     <div className="spectrum-band-key">
-      {[5, 4, 3, 2, 1].map((points) => (
+      {[4, 3, 2, 1].map((points) => (
         <span key={points} className="spectrum-band-key-item">
           <span className={`spectrum-band-key-swatch band-${points}`} />+{points}
         </span>

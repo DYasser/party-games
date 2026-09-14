@@ -504,25 +504,21 @@
   border-right: 1px solid rgba(11, 13, 20, 0.55);
 }
 
-/* Green at the bullseye through to grey at the edge: closer is better. */
-.spectrum-band.band-5 {
+/* Green at the bullseye through to pink at the edge: closer is better. */
+.spectrum-band.band-4 {
   background: rgba(108, 245, 194, 0.92);
 }
 
-.spectrum-band.band-4 {
+.spectrum-band.band-3 {
   background: rgba(122, 214, 140, 0.82);
 }
 
-.spectrum-band.band-3 {
+.spectrum-band.band-2 {
   background: rgba(242, 200, 121, 0.78);
 }
 
-.spectrum-band.band-2 {
-  background: rgba(245, 155, 90, 0.72);
-}
-
 .spectrum-band.band-1 {
-  background: rgba(200, 120, 140, 0.6);
+  background: rgba(245, 155, 90, 0.72);
 }
 
 .spectrum-band-score {
@@ -535,11 +531,12 @@
 }
 
 /*
- * The bullseye band is only 6% of the track wide and the target pin sits right
- * on top of it, so its number is unreadable. Drop it — the legend names the
- * colour, and the pin already marks the spot.
+ * The inner bands are far too narrow for a number now (the bullseye is 4% of
+ * the track and sits under the target pin), so they go unlabelled. The legend
+ * names every colour.
  */
-.spectrum-band.band-5 .spectrum-band-score {
+.spectrum-band.band-4 .spectrum-band-score,
+.spectrum-band.band-3 .spectrum-band-score {
   display: none;
 }
 
@@ -569,22 +566,18 @@
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.spectrum-band-key-swatch.band-5 {
+.spectrum-band-key-swatch.band-4 {
   background: rgba(108, 245, 194, 0.92);
 }
 
-.spectrum-band-key-swatch.band-4 {
+.spectrum-band-key-swatch.band-3 {
   background: rgba(122, 214, 140, 0.82);
 }
 
-.spectrum-band-key-swatch.band-3 {
+.spectrum-band-key-swatch.band-2 {
   background: rgba(242, 200, 121, 0.78);
 }
 
-.spectrum-band-key-swatch.band-2 {
-  background: rgba(245, 155, 90, 0.72);
-}
-
 .spectrum-band-key-swatch.band-1 {
-  background: rgba(200, 120, 140, 0.6);
+  background: rgba(245, 155, 90, 0.72);
 }

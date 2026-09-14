@@ -29,8 +29,9 @@ export default function SpectrumEntry() {
             adjusting until you lock.
           </>,
           <>
-            On the reveal, the closer your needle, the better: within 3 scores 5 points, within 8 scores 4, within 15
-            scores 3, within 25 scores 2, and within 35 scores 1.
+            On the reveal, the closer your needle, the better: within 2 scores 4 points, within 6 scores 3, within 12
+            scores 2, and within 20 scores 1. Miss by more than 20 and you score nothing, so the bands are tight and a
+            vague clue is worth very little.
           </>,
           <>
             The psychic scores the average of everyone&apos;s points, rounded off, so a clue that works for the whole room

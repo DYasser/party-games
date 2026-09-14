@@ -96,13 +96,12 @@ describe('startGame / startRound', () => {
    * If the scoring changes, the picture must change with it — this test is the
    * tripwire that says so.
    */
-  it('scores by distance in five bands: 3, 8, 15, 25, 35', () => {
+  it('scores by distance in four tight bands: 2, 6, 12, 20', () => {
     const bands: Array<[number, number]> = [
-      [3, 5],
-      [8, 4],
-      [15, 3],
-      [25, 2],
-      [35, 1],
+      [2, 4],
+      [6, 3],
+      [12, 2],
+      [20, 1],
     ];
     for (const [reach, points] of bands) {
       expect(pointsForDistance(reach)).toBe(points);
@@ -110,8 +109,9 @@ describe('startGame / startRound', () => {
       // One step past the edge drops into the next band down.
       expect(pointsForDistance(reach + 1)).toBe(points - 1);
     }
-    expect(pointsForDistance(0)).toBe(5);
-    expect(pointsForDistance(36)).toBe(0);
+    expect(pointsForDistance(0)).toBe(4);
+    // Past the last band a guess is worth nothing: most of the scale is dead.
+    expect(pointsForDistance(21)).toBe(0);
     expect(pointsForDistance(100)).toBe(0);
   });
 
@@ -194,19 +194,19 @@ describe('guessing', () => {
     const s = guessing();
     const target = s.round!.target;
     const [g1, g2, g3] = s.round!.guesserIds;
-    let n = lockGuess(setGuess(s, g1, target), g1, T0); // 5 points
-    n = lockGuess(setGuess(n, g2, Math.min(100, target + 10)), g2, T0); // 3 points (or fewer if clamped)
+    let n = lockGuess(setGuess(s, g1, target), g1, T0); // exact hit: 4 points
+    n = lockGuess(setGuess(n, g2, Math.min(100, target + 10)), g2, T0); // 2 points (or fewer if clamped)
     expect(n.phase).toBe('guessing');
     n = lockGuess(setGuess(n, g3, target > 50 ? 0 : 100), g3, T0 + 5000); // 0 points (distance >= 50)
     expect(n.phase).toBe('reveal');
     const r = n.round!;
-    expect(r.points![g1]).toBe(5);
+    expect(r.points![g1]).toBe(4);
     expect(r.points![g2]).toBe(pointsForDistance(Math.min(100, target + 10) - target));
     expect(r.points![g3]).toBe(0);
     const avg = (r.points![g1] + r.points![g2] + r.points![g3]) / 3;
     expect(r.psychicPoints).toBe(Math.round(avg));
     expect(n.scores[r.psychicId]).toBe(Math.round(avg));
-    expect(n.scores[g1]).toBe(5);
+    expect(n.scores[g1]).toBe(4);
     expect(n.roundsPlayed).toBe(1);
     expect(r.revealEndsAt).toBe(T0 + 5000 + REVEAL_SECONDS * 1000);
   });
@@ -229,26 +229,24 @@ describe('guessing', () => {
     expect(guessTimeUp(n, T0 + 59_000)).toBe(n);
     const r = guessTimeUp(n, T0 + 60_000);
     expect(r.phase).toBe('reveal');
-    expect(r.round!.points![g1]).toBe(5);
+    expect(r.round!.points![g1]).toBe(4);
     expect(Object.values(r.round!.points!).filter((p) => p === 0)).toHaveLength(2);
     // Psychic average only counts guessers who actually guessed.
-    expect(r.round!.psychicPoints).toBe(5);
+    expect(r.round!.psychicPoints).toBe(4);
   });
 });
 
 describe('scoring table', () => {
   it('maps distance to points', () => {
-    expect(pointsForDistance(0)).toBe(5);
-    expect(pointsForDistance(3)).toBe(5);
-    expect(pointsForDistance(-4)).toBe(4);
-    expect(pointsForDistance(8)).toBe(4);
-    expect(pointsForDistance(9)).toBe(3);
-    expect(pointsForDistance(15)).toBe(3);
-    expect(pointsForDistance(16)).toBe(2);
-    expect(pointsForDistance(25)).toBe(2);
-    expect(pointsForDistance(26)).toBe(1);
-    expect(pointsForDistance(35)).toBe(1);
-    expect(pointsForDistance(36)).toBe(0);
+    expect(pointsForDistance(0)).toBe(4);
+    expect(pointsForDistance(2)).toBe(4);
+    expect(pointsForDistance(-3)).toBe(3);
+    expect(pointsForDistance(6)).toBe(3);
+    expect(pointsForDistance(7)).toBe(2);
+    expect(pointsForDistance(12)).toBe(2);
+    expect(pointsForDistance(13)).toBe(1);
+    expect(pointsForDistance(20)).toBe(1);
+    expect(pointsForDistance(21)).toBe(0);
     expect(pointsForDistance(100)).toBe(0);
   });
 });

@@ -1,6 +1,34 @@
 // End-to-end smoke test for Spectrum: a human host plus three bots play a 3-round game (the minimum).
 // Run against your own server: PORT=3101 npx tsx server/src/index.ts, then E2E_URL=http://localhost:3101 node scripts/e2e-spectrum.mjs
+import { readFileSync } from 'node:fs';
 import { assert, connect, rejects, req, settle } from './e2e-lib.mjs';
+
+/*
+ * A copy of shared/spectrum/logic.ts `pointsForDistance`. This is plain Node so
+ * it cannot import the TypeScript source; the check below reads the real table
+ * out of that file and fails loudly if the two ever disagree, which is exactly
+ * what happened when the bands were retuned.
+ */
+const pointsFor = (d) => (d <= 2 ? 4 : d <= 6 ? 3 : d <= 12 ? 2 : d <= 20 ? 1 : 0);
+
+{
+  const src = readFileSync(new URL('../shared/spectrum/logic.ts', import.meta.url), 'utf8');
+  const body = src.slice(src.indexOf('export function pointsForDistance'));
+  // Stop at the closing brace; no newline literal needed.
+  const end = body.indexOf('return 0;');
+  const real = [...body.slice(0, end).matchAll(/d <= (\d+)\) return (\d+)/g)].map((m) => [
+    Number(m[1]),
+    Number(m[2]),
+  ]);
+  assert(real.length > 0, 'could not read the scoring table out of logic.ts');
+  for (const [reach, points] of real) {
+    assert(
+      pointsFor(reach) === points,
+      `scoring table drifted: logic.ts says ${reach} -> +${points}, this script says +${pointsFor(reach)}`,
+    );
+  }
+  console.log('scoring table matches logic.ts:', real.map(([d, p]) => `${d}:+${p}`).join(' '));
+}
 
 const hostId = 'spectrum-host-0001';
 const sock = await connect();
@@ -17,7 +45,6 @@ async function waitFor(pred, label, timeoutMs = 20_000) {
   throw new Error(`ASSERT: timed out waiting for ${label} (phase=${latest?.state?.phase})`);
 }
 
-const pointsFor = (d) => (d <= 3 ? 5 : d <= 8 ? 4 : d <= 15 ? 3 : d <= 25 ? 2 : d <= 35 ? 1 : 0);
 
 // ---- Lobby ----
 const { code } = await req(sock, 'room:create', { game: 'spectrum', name: 'Human', playerId: hostId });
