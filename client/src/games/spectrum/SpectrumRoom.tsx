@@ -202,6 +202,67 @@ function Lobby({
   const hasHuman = connected.some((p) => !p.isBot);
   const mode = state.settings.mode;
 
+  const warning =
+    connected.length < MIN_PLAYERS
+      ? `You need at least ${MIN_PLAYERS} players. Share the room code or add bots!`
+      : !hasHuman
+        ? 'At least one human is needed to be the psychic.'
+        : null;
+
+  const settings = (
+        <GameSettings isHost={isHost} summary={`${MODE_LABEL[mode]} · ${state.settings.rounds} rounds`}>
+          <div className="numfield settings-row-full">
+            <span className="numfield-label">Game mode</span>
+            <Select
+              label="Game mode"
+              value={mode}
+              disabled={!isHost}
+              onChange={(v) => onSettings({ mode: v })}
+              options={[
+                { value: 'classic', label: 'Classic', hint: 'Both ends named' },
+                { value: 'blind', label: 'Blind', hint: 'Ends hidden — harder' },
+                { value: 'teams', label: 'Teams', hint: 'Two sides take turns' },
+              ]}
+            />
+            <span className="numfield-hint">{MODE_HINT[mode]}</span>
+          </div>
+
+          <NumberField
+            label="Rounds"
+            value={state.settings.rounds}
+            min={MIN_ROUNDS}
+            max={MAX_ROUNDS}
+            suffix="rounds"
+            disabled={!isHost}
+            onCommit={(rounds) => onSettings({ rounds })}
+          />
+
+          <p className="muted small-text settings-row-full">
+            The psychic role passes between the human players each round. Bots only guess. Guessers get 60 seconds once the
+            clue is in.
+          </p>
+        </GameSettings>
+  );
+
+  /*
+   * In team mode the Teams panel already names every player, so a separate
+   * Players list is pure duplication. The picker takes the whole lobby instead.
+   */
+  if (mode === 'teams') {
+    return (
+      <div className="spectrum-lobby solo">
+        <TeamPicker
+          room={room}
+          isHost={isHost}
+          onTeam={onTeam}
+          onShuffle={onShuffle}
+          warning={warning}
+        />
+        {settings}
+      </div>
+    );
+  }
+
   return (
     <div className="spectrum-lobby">
       <section className="card">
@@ -219,46 +280,10 @@ function Lobby({
             </li>
           ))}
         </ul>
-        {connected.length < MIN_PLAYERS && <p className="hint">You need at least {MIN_PLAYERS} players. Share the room code or add bots!</p>}
-        {connected.length >= MIN_PLAYERS && !hasHuman && <p className="hint">At least one human is needed to be the psychic.</p>}
+        {warning && <p className="hint">{warning}</p>}
       </section>
 
-      {mode === 'teams' && (
-        <TeamPicker room={room} isHost={isHost} onTeam={onTeam} onShuffle={onShuffle} />
-      )}
-
-      <GameSettings isHost={isHost} summary={`${MODE_LABEL[mode]} · ${state.settings.rounds} rounds`}>
-        <div className="numfield settings-row-full">
-          <span className="numfield-label">Game mode</span>
-          <Select
-            label="Game mode"
-            value={mode}
-            disabled={!isHost}
-            onChange={(v) => onSettings({ mode: v })}
-            options={[
-              { value: 'classic', label: 'Classic', hint: 'Both ends named' },
-              { value: 'blind', label: 'Blind', hint: 'Ends hidden — harder' },
-              { value: 'teams', label: 'Teams', hint: 'Two sides take turns' },
-            ]}
-          />
-          <span className="numfield-hint">{MODE_HINT[mode]}</span>
-        </div>
-
-        <NumberField
-          label="Rounds"
-          value={state.settings.rounds}
-          min={MIN_ROUNDS}
-          max={MAX_ROUNDS}
-          suffix="rounds"
-          disabled={!isHost}
-          onCommit={(rounds) => onSettings({ rounds })}
-        />
-
-        <p className="muted small-text settings-row-full">
-          The psychic role passes between the human players each round. Bots only guess. Guessers get 60 seconds once the
-          clue is in.
-        </p>
-      </GameSettings>
+      {settings}
     </div>
   );
 }
@@ -287,11 +312,14 @@ function TeamPicker({
   isHost,
   onTeam,
   onShuffle,
+  warning,
 }: {
   room: SpectrumRoomView;
   isHost: boolean;
   onTeam: (playerId: string, team: string | null) => void;
   onShuffle: () => void;
+  /** Shown under the sides when the room cannot start yet. */
+  warning?: string | null;
 }) {
   const { players, state } = room;
   const [held, setHeld] = useState<string | null>(null);
@@ -345,14 +373,18 @@ function TeamPicker({
         if (isHost) setHeld((cur) => (cur === p.id ? null : p.id));
       }}
     >
-      <span className="player-name">{p.name}</span>
+      <span className="player-name">
+        {p.name}
+        {p.id === room.you.id && <span className="muted"> (you)</span>}
+      </span>
       {p.isBot && <span className="tag bot">bot</span>}
+      {p.id === room.hostId && <span className="tag">host</span>}
+      {!p.connected && <span className="tag">away</span>}
     </div>
   );
 
-  const side = (team: 'red' | 'blue') =>
-    players.filter((p) => p.connected && state.teams[p.id] === team);
-  const bench = players.filter((p) => p.connected && !state.teams[p.id]);
+  const side = (team: 'red' | 'blue') => players.filter((p) => state.teams[p.id] === team);
+  const bench = players.filter((p) => !state.teams[p.id]);
 
   return (
     <section className="card spectrum-teams">
@@ -392,6 +424,7 @@ function TeamPicker({
         )}
       </div>
 
+      {warning && <p className="hint">{warning}</p>}
       {isHost && <p className="muted small-text">Drag a player onto a side, or tap them and then tap a side.</p>}
     </section>
   );

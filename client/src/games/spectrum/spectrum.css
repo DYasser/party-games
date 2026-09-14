@@ -7,6 +7,12 @@
   align-items: start;
 }
 
+/* Team mode has no separate player list, so the picker gets the full width. */
+.spectrum-lobby.solo {
+  grid-template-columns: minmax(0, 620px);
+  justify-content: center;
+}
+
 .spectrum-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 290px;
