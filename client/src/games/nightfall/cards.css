@@ -1,0 +1,752 @@
+/* =====================================================================
+   Nightfall player cards: role sigils, per-role hover effects, reveals
+   ===================================================================== */
+
+.nf-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 0.7rem;
+}
+
+/* ---------- The card itself ---------- */
+
+.nf-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: linear-gradient(165deg, #1b2033 0%, #12151f 100%);
+  color: var(--text);
+  padding: 0.55rem 0.4rem;
+  font: inherit;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, filter 0.25s ease;
+}
+
+.nf-card-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  height: 100%;
+}
+
+.nf-role-icon {
+  width: 46px;
+  height: 46px;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+}
+
+.nf-card-icon {
+  margin-top: 0.1rem;
+}
+
+.nf-card-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nf-card-you {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.nf-card-role {
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.nf-card-note {
+  font-size: 0.66rem;
+  color: var(--muted);
+  margin-top: auto;
+  line-height: 1.2;
+}
+
+.nf-card .tag.bot {
+  font-size: 0.58rem;
+  padding: 0 0.35rem;
+}
+
+/* Face-down cards read as a matching card back. */
+.nf-card.face-down {
+  background:
+    repeating-linear-gradient(45deg, rgba(157, 107, 255, 0.06) 0 6px, transparent 6px 12px),
+    linear-gradient(165deg, #191d2e 0%, #10131c 100%);
+}
+
+/* Team tinting once a role is known. */
+.nf-card.role-shade {
+  border-color: rgba(255, 77, 109, 0.55);
+  background: linear-gradient(165deg, #2a1420 0%, #140d13 100%);
+}
+
+.nf-card.role-oracle {
+  border-color: rgba(56, 225, 255, 0.5);
+  background: linear-gradient(165deg, #0f2733 0%, #0b1620 100%);
+}
+
+.nf-card.role-healer {
+  border-color: rgba(108, 245, 194, 0.5);
+  background: linear-gradient(165deg, #0f2c25 0%, #0b1a17 100%);
+}
+
+.nf-card.role-townsfolk {
+  border-color: rgba(199, 210, 235, 0.35);
+}
+
+.nf-card.is-you {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 0 2px rgba(56, 225, 255, 0.4);
+}
+
+/*
+ * Out of the game.
+ *
+ * Greying alone was not enough: as a dead spectator every card shows a role, so
+ * the only thing separating the living from the dead was a slight dimming, and
+ * the board became hard to read at a glance. The dead now also get a desaturated
+ * dark ground, a dashed border, a tilt, and a struck-through name.
+ */
+.nf-card.dead,
+.nf-card.left {
+  filter: grayscale(0.9) brightness(0.62);
+  background: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.02) 0 8px,
+      transparent 8px 16px
+    ),
+    linear-gradient(165deg, #12131a 0%, #0a0b10 100%);
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+  transform: rotate(-1.2deg);
+}
+
+/* The name is struck through, the way a crossed-off list reads. */
+.nf-card.dead .nf-card-name,
+.nf-card.left .nf-card-name {
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 143, 163, 0.8);
+  text-decoration-thickness: 2px;
+  opacity: 0.75;
+}
+
+/* The sigil fades back so it does not compete with the living. */
+.nf-card.dead .nf-role-icon,
+.nf-card.left .nf-role-icon {
+  opacity: 0.55;
+}
+
+/* A living card sits upright and lit, so the contrast is obvious. */
+.nf-card:not(.dead):not(.left) {
+  transform: rotate(0deg);
+}
+
+/*
+ * Your own card stays legible even after you are out: a dead spectator still
+ * needs to read their own role, and dimming it to match the others made it the
+ * hardest card on the board to read.
+ */
+.nf-card.dead.is-you,
+.nf-card.left.is-you {
+  filter: grayscale(0.25) brightness(0.92);
+  opacity: 1;
+  border-color: rgba(56, 225, 255, 0.45);
+}
+
+/*
+ * The stamp sits across the icon, not the text: it used to overlap the role
+ * name and make both unreadable.
+ */
+/*
+ * A corner ribbon rather than a stamp across the middle: overlaid on the sigil
+ * it made both the word and the icon unreadable. The card's dashed border,
+ * tilt and struck-through name already carry the "out" message, so this only
+ * has to name which kind of out it is.
+ */
+.nf-card-stamp {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  z-index: 4;
+  padding: 0.08rem 0.34rem;
+  border-radius: 4px;
+  background: rgba(255, 77, 109, 0.9);
+  color: #14040a;
+  font-family: var(--font-display);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  pointer-events: none;
+}
+
+/*
+ * On the end screen the stamp is redundant: the card is already greyed and the
+ * note underneath says "eliminated", so hide it and keep the sigil clean.
+ */
+.nf-card.outcome-win .nf-card-stamp,
+.nf-card.outcome-lose .nf-card-stamp {
+  display: none;
+}
+
+.nf-card-lock {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.35rem;
+  z-index: 4;
+  font-size: 0.8rem;
+}
+
+/* An oracle's permanent verdict on a card. */
+.nf-card-verdict {
+  position: absolute;
+  bottom: 0.3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.nf-card-verdict.shade {
+  background: rgba(255, 77, 109, 0.9);
+  color: #1a0209;
+}
+
+.nf-card-verdict.clear {
+  background: rgba(108, 245, 194, 0.85);
+  color: #04160f;
+}
+
+.nf-card.known-shade {
+  border-color: rgba(255, 77, 109, 0.75);
+}
+
+.nf-card.known-clear {
+  border-color: rgba(108, 245, 194, 0.6);
+}
+
+/* ---------- Selectable state ---------- */
+
+.nf-card.actionable {
+  cursor: pointer;
+}
+
+.nf-card.actionable:hover,
+.nf-card.actionable:focus-visible {
+  transform: translateY(-6px) scale(1.03);
+  outline: none;
+  z-index: 5;
+}
+
+.nf-card.selected {
+  transform: translateY(-6px) scale(1.03);
+  border-color: var(--cyan);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 22px rgba(56, 225, 255, 0.4);
+}
+
+.nf-card.locked {
+  cursor: default;
+}
+
+.nf-card.locked.selected {
+  border-color: var(--mint);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 22px rgba(108, 245, 194, 0.45);
+}
+
+/* ---------- Per-role hover flourishes ---------- */
+
+.nf-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.nf-card.actionable:hover .nf-fx,
+.nf-card.actionable:focus-visible .nf-fx,
+.nf-card.selected .nf-fx {
+  opacity: 1;
+}
+
+/* Shade: two blades sweep across the card. */
+.nf-fx-kill {
+  overflow: hidden;
+}
+
+.nf-slash {
+  position: absolute;
+  top: -20%;
+  left: -30%;
+  width: 160%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #ff4d6d, transparent);
+  box-shadow: 0 0 12px rgba(255, 77, 109, 0.9);
+  transform: rotate(-38deg) translateX(-120%);
+}
+
+.nf-card.actionable:hover .nf-slash,
+.nf-card.selected .nf-slash {
+  animation: nf-slash-sweep 0.55s ease-out forwards;
+}
+
+.nf-slash.two {
+  top: 40%;
+}
+
+.nf-card.actionable:hover .nf-slash.two,
+.nf-card.selected .nf-slash.two {
+  animation-delay: 0.12s;
+}
+
+@keyframes nf-slash-sweep {
+  from {
+    transform: rotate(-38deg) translateX(-120%);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    transform: rotate(-38deg) translateX(120%);
+    opacity: 0;
+  }
+}
+
+.nf-card.actionable.intent-kill:hover,
+.nf-card.intent-kill.selected {
+  border-color: var(--red);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 24px rgba(255, 77, 109, 0.45);
+}
+
+/* Oracle: a scanning line plus an opening eye. */
+.nf-fx-inspect {
+  overflow: hidden;
+}
+
+.nf-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40%;
+  top: -40%;
+  background: linear-gradient(180deg, transparent, rgba(56, 225, 255, 0.35), transparent);
+}
+
+.nf-card.actionable:hover .nf-scan,
+.nf-card.selected .nf-scan {
+  animation: nf-scan-down 1.1s ease-in-out infinite;
+}
+
+@keyframes nf-scan-down {
+  from {
+    top: -40%;
+  }
+  to {
+    top: 100%;
+  }
+}
+
+.nf-eye {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 225, 255, 0.9);
+  box-shadow: 0 0 18px rgba(56, 225, 255, 0.6), inset 0 0 12px rgba(56, 225, 255, 0.35);
+  transform: scale(0.2);
+}
+
+.nf-card.actionable:hover .nf-eye,
+.nf-card.selected .nf-eye {
+  animation: nf-eye-open 0.4s ease-out forwards;
+}
+
+@keyframes nf-eye-open {
+  to {
+    transform: scale(1);
+  }
+}
+
+.nf-card.actionable.intent-inspect:hover,
+.nf-card.intent-inspect.selected {
+  border-color: var(--cyan);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 24px rgba(56, 225, 255, 0.45);
+}
+
+/* Healer: a halo of light, a cross, and rising sparks. */
+.nf-halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 70px;
+  height: 70px;
+  margin: -35px 0 0 -35px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108, 245, 194, 0.35) 0%, transparent 70%);
+}
+
+.nf-card.actionable:hover .nf-halo,
+.nf-card.selected .nf-halo {
+  animation: nf-halo-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes nf-halo-pulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+.nf-plus {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  background:
+    linear-gradient(#6cf5c2, #6cf5c2) center / 100% 6px no-repeat,
+    linear-gradient(#6cf5c2, #6cf5c2) center / 6px 100% no-repeat;
+  filter: drop-shadow(0 0 8px rgba(108, 245, 194, 0.9));
+  border-radius: 3px;
+}
+
+.nf-card.actionable:hover .nf-plus,
+.nf-card.selected .nf-plus {
+  animation: nf-plus-in 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) forwards;
+}
+
+@keyframes nf-plus-in {
+  from {
+    transform: scale(0) rotate(-40deg);
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.nf-spark {
+  position: absolute;
+  bottom: 12%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #6cf5c2;
+  box-shadow: 0 0 8px rgba(108, 245, 194, 0.9);
+  opacity: 0;
+}
+
+.nf-spark.s1 {
+  left: 26%;
+}
+.nf-spark.s2 {
+  left: 50%;
+}
+.nf-spark.s3 {
+  left: 72%;
+}
+
+.nf-card.actionable:hover .nf-spark,
+.nf-card.selected .nf-spark {
+  animation: nf-spark-rise 1.5s ease-out infinite;
+}
+
+.nf-card.actionable:hover .nf-spark.s2,
+.nf-card.selected .nf-spark.s2 {
+  animation-delay: 0.3s;
+}
+
+.nf-card.actionable:hover .nf-spark.s3,
+.nf-card.selected .nf-spark.s3 {
+  animation-delay: 0.6s;
+}
+
+@keyframes nf-spark-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-58px) scale(1.1);
+  }
+}
+
+.nf-card.actionable.intent-heal:hover,
+.nf-card.intent-heal.selected {
+  border-color: var(--mint);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 24px rgba(108, 245, 194, 0.45);
+}
+
+/* Day vote: a pointing hand. */
+.nf-gavel {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  font-size: 1.7rem;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+
+.nf-card.actionable:hover .nf-gavel,
+.nf-card.selected .nf-gavel {
+  animation: nf-gavel-tap 0.6s ease-in-out infinite;
+}
+
+@keyframes nf-gavel-tap {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(-8deg);
+  }
+  50% {
+    transform: translate(-50%, -62%) rotate(6deg);
+  }
+}
+
+.nf-card.actionable.intent-vote:hover,
+.nf-card.intent-vote.selected {
+  border-color: #f5b544;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 24px rgba(245, 181, 68, 0.4);
+}
+
+/* ---------- End screen: flip reveal, then celebrate or slump ---------- */
+
+.nf-card.outcome-win,
+.nf-card.outcome-lose {
+  animation: nf-flip-in 0.6s cubic-bezier(0.2, 1, 0.3, 1) both;
+}
+
+@keyframes nf-flip-in {
+  from {
+    transform: rotateY(90deg) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: rotateY(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Winners bounce and glow once the flip lands. */
+.nf-card.outcome-win .nf-card-inner {
+  animation: nf-cheer 1.9s ease-in-out 0.8s infinite;
+}
+
+@keyframes nf-cheer {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-7px) rotate(-2.5deg);
+  }
+  60% {
+    transform: translateY(-3px) rotate(2.5deg);
+  }
+}
+
+.nf-card.outcome-win {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.5), 0 0 26px rgba(245, 181, 68, 0.4);
+  border-color: rgba(245, 181, 68, 0.7);
+}
+
+.nf-card.outcome-win::after {
+  content: '';
+  position: absolute;
+  inset: -30% -30% auto;
+  height: 60%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245, 181, 68, 0.35), transparent 70%);
+  pointer-events: none;
+}
+
+/* Losers desaturate and slump forward. */
+.nf-card.outcome-lose {
+  filter: grayscale(0.7) brightness(0.72);
+}
+
+.nf-card.outcome-lose .nf-card-inner {
+  animation: nf-slump 2.6s ease-in-out 0.8s infinite;
+}
+
+@keyframes nf-slump {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(4px) rotate(1.5deg);
+  }
+}
+
+.nf-card.outcome-lose .nf-role-icon {
+  opacity: 0.75;
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .nf-card,
+  .nf-card-inner,
+  .nf-fx,
+  .nf-fx * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* The flip starts invisible, so make sure cards still show. */
+  .nf-card.outcome-win,
+  .nf-card.outcome-lose {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Keep the state readable without motion. */
+  .nf-card.actionable:hover .nf-fx,
+  .nf-card.selected .nf-fx {
+    opacity: 1;
+  }
+
+  .nf-eye,
+  .nf-plus {
+    transform: scale(1) !important;
+  }
+
+  .nf-slash,
+  .nf-scan,
+  .nf-spark {
+    display: none;
+  }
+}
+
+/* A fellow Shade: your coven, visible only to you. */
+.nf-card.ally {
+  border-color: rgba(255, 77, 109, 0.65);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 77, 109, 0.35);
+}
+
+.nf-card-verdict.ally {
+  background: rgba(255, 77, 109, 0.85);
+  color: #1a0209;
+}
+
+/* A fellow Shade's chosen victim, so the coven can coordinate. */
+.nf-card.ally-target {
+  border-color: rgba(255, 77, 109, 0.7);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), 0 0 18px rgba(255, 77, 109, 0.3);
+}
+
+.nf-ally-mark {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.35rem;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.12rem 0.32rem;
+  border-radius: 999px;
+  background: var(--red);
+  color: #1a0209;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* A dashed ring while the ally is still deciding, solid once locked. */
+.nf-ally-mark:not(.locked) {
+  background: transparent;
+  color: var(--red);
+  box-shadow: inset 0 0 0 1px var(--red), 0 2px 6px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.nf-ally-mark em {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.62rem;
+  font-family: var(--font-display);
+}
+
+.nf-ally-mark-icon {
+  width: 11px;
+  height: 11px;
+  display: block;
+  flex: 0 0 auto;
+}
+
+/* ---------- End screen: reactions live on the cards ---------- */
+
+.nf-reveal-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* A card you can tap purely to react to that player. */
+.nf-card.reactable {
+  cursor: pointer;
+}
+
+.nf-card.reactable:hover,
+.nf-card.reactable:focus-visible {
+  outline: none;
+  border-color: rgba(157, 107, 255, 0.65);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 20px rgba(157, 107, 255, 0.3);
+}
+
+/* The picker opens below its card rather than over the grid. */
+.nf-reveal-slot .reaction-picker {
+  top: calc(100% + 0.3rem);
+  bottom: auto;
+  z-index: 20;
+}
+
+/*
+ * Positioned so the confetti credit can anchor to it without affecting layout,
+ * and given room below for that credit line.
+ */
+.nf-results-actions {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  padding-top: 0.25rem;
+  padding-bottom: 1.6rem;
+}

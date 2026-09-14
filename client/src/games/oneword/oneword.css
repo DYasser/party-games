@@ -1,0 +1,516 @@
+/* ---------- One Word ---------- */
+
+.oneword-lobby,
+.oneword-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.oneword-lobby {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.oneword-main,
+.oneword-side,
+.oneword-play,
+.oneword-guesser,
+.oneword-result,
+.oneword-ended {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Header */
+
+.oneword-header {
+  padding: 1rem 1.25rem;
+}
+
+.oneword-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.oneword-title {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.oneword-guesser-line {
+  margin: 0.15rem 0 0;
+}
+
+.oneword-clock {
+  font-size: 1.4rem;
+  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.oneword-clock-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Deck progress dots */
+
+.oneword-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.oneword-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  background: transparent;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.oneword-dot.success {
+  background: var(--mint);
+  border-color: var(--mint);
+  box-shadow: 0 0 10px rgba(108, 245, 194, 0.55);
+}
+
+.oneword-dot.fail {
+  background: var(--red);
+  border-color: var(--red);
+  box-shadow: 0 0 10px rgba(255, 77, 109, 0.5);
+}
+
+.oneword-dot.pass,
+.oneword-dot.discarded {
+  background: rgba(139, 145, 168, 0.55);
+  border-color: rgba(139, 145, 168, 0.55);
+}
+
+.oneword-dot.current {
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(56, 225, 255, 0.6);
+  transform: scale(1.2);
+}
+
+/* Secret word card */
+
+.oneword-word-card,
+.oneword-reveal {
+  border: 1px solid rgba(56, 225, 255, 0.4);
+  border-radius: var(--radius);
+  padding: 1.6rem 1.25rem 1.3rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(56, 225, 255, 0.18), transparent 60%),
+    var(--panel);
+  box-shadow: var(--shadow), var(--glow-cyan);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.oneword-word-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.oneword-word {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  word-break: break-word;
+}
+
+.oneword-word-sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Forms */
+
+.oneword-hint-form,
+.oneword-guess-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.oneword-form-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.oneword-guesser-note {
+  margin: 0.75rem 0 0;
+}
+
+/* Hint cards */
+
+.oneword-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+
+.oneword-hints.big {
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.oneword-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  color: var(--text);
+  text-align: left;
+  min-width: 120px;
+  font: inherit;
+}
+
+.oneword-hint.clickable {
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease, background 0.15s ease;
+}
+
+.oneword-hint.clickable:hover {
+  border-color: var(--cyan);
+  transform: translateY(-1px);
+}
+
+.oneword-hint-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+}
+
+.oneword-hints.big .oneword-hint {
+  align-items: center;
+  min-width: 160px;
+  padding: 1.1rem 1.5rem;
+  border-color: rgba(157, 107, 255, 0.5);
+  box-shadow: var(--glow-accent);
+}
+
+.oneword-hints.big .oneword-hint-text {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  text-transform: uppercase;
+}
+
+.oneword-hint-by {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.oneword-hint.cancelled {
+  opacity: 0.5;
+  border-color: rgba(255, 77, 109, 0.5);
+}
+
+.oneword-hint.cancelled .oneword-hint-text {
+  text-decoration: line-through;
+}
+
+.tag.oneword-dup {
+  background: rgba(255, 77, 109, 0.15);
+  border-color: rgba(255, 77, 109, 0.45);
+  color: #ffb3c1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.6rem;
+}
+
+.tag.oneword-ok {
+  color: var(--mint);
+  border-color: rgba(108, 245, 194, 0.4);
+  background: rgba(108, 245, 194, 0.1);
+}
+
+/* Guesser */
+
+.oneword-waiting {
+  text-align: center;
+  padding: 2.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.oneword-pulse {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--violet);
+  box-shadow: var(--glow-accent);
+  animation: oneword-pulse 1.4s ease-in-out infinite;
+  margin-top: 0.5rem;
+}
+
+@keyframes oneword-pulse {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.oneword-hints-stage {
+  text-align: center;
+  padding: 1.5rem 1.25rem;
+}
+
+.oneword-stage-label {
+  margin: 0;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-family: var(--font-display);
+}
+
+/* Result + end */
+
+.banner.oneword-success {
+  background: rgba(108, 245, 194, 0.12);
+  border: 1px solid rgba(108, 245, 194, 0.6);
+  box-shadow: 0 0 30px rgba(108, 245, 194, 0.25);
+}
+
+.banner.oneword-fail {
+  background: rgba(255, 77, 109, 0.14);
+  border: 1px solid rgba(255, 77, 109, 0.6);
+  box-shadow: 0 0 30px rgba(255, 77, 109, 0.25);
+}
+
+.banner.oneword-pass {
+  background: rgba(139, 145, 168, 0.12);
+  border: 1px solid rgba(139, 145, 168, 0.5);
+}
+
+/* Cooperative finale card: one shared score, so no podium. */
+
+.oneword-finale {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.25rem 1.5rem 1.75rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(139, 145, 168, 0.5);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(139, 145, 168, 0.16), transparent 65%),
+    var(--panel);
+  animation: oneword-finale-in 0.5s ease both;
+}
+
+.oneword-finale.perfect {
+  border-color: rgba(157, 107, 255, 0.7);
+  background:
+    radial-gradient(circle at 50% -10%, rgba(157, 107, 255, 0.28), transparent 65%),
+    var(--panel);
+  box-shadow: var(--shadow), 0 0 46px rgba(157, 107, 255, 0.35);
+}
+
+@keyframes oneword-finale-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.oneword-finale-label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.oneword-finale-score {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.5rem;
+  animation: oneword-finale-pop 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) 0.15s both;
+}
+
+@keyframes oneword-finale-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.oneword-finale-number {
+  font-family: var(--font-display);
+  font-size: clamp(3.4rem, 13vw, 6rem);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.oneword-finale.perfect .oneword-finale-number {
+  color: var(--violet);
+  text-shadow: 0 0 28px rgba(157, 107, 255, 0.6);
+}
+
+.oneword-finale-outof {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 4vw, 1.9rem);
+  color: var(--muted);
+}
+
+.oneword-finale-rating {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.15rem, 4vw, 1.6rem);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  animation: oneword-finale-rise 0.5s ease 0.5s both;
+}
+
+.oneword-finale.perfect .oneword-finale-rating {
+  color: var(--violet);
+}
+
+@keyframes oneword-finale-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.oneword-finale-recap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.25rem;
+}
+
+.oneword-finale-recap-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.oneword-finale .oneword-dots {
+  justify-content: center;
+}
+
+/* Recap dots pop in one at a time; delays are set inline per dot. */
+.oneword-dots.animated .oneword-dot {
+  animation: oneword-dot-in 0.32s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+@keyframes oneword-dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.oneword-finale-tallies {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.4rem;
+  animation: oneword-finale-rise 0.5s ease 0.75s both;
+}
+
+.oneword-finale-tallies li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.oneword-finale-tallies strong {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+}
+
+.oneword-finale-actions {
+  margin-top: 0.5rem;
+  animation: oneword-finale-rise 0.5s ease 0.95s both;
+}
+
+/* Reduced motion: keep every element visible, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .oneword-finale,
+  .oneword-finale-score,
+  .oneword-finale-rating,
+  .oneword-finale-tallies,
+  .oneword-finale-actions,
+  .oneword-dots.animated .oneword-dot {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .oneword-lobby,
+  .oneword-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .oneword-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

@@ -1,0 +1,426 @@
+/* ---------- Pair Rush ---------- */
+
+.pr-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .pr-layout {
+    grid-template-columns: 1fr;
+  }
+  /* On a phone the board matters more than the scoreboard. */
+  .pr-side {
+    order: 2;
+  }
+}
+
+.pr-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 0;
+}
+
+/* The banners span the column even though the board is centred. */
+.pr-main > .banner,
+.pr-main > .hint,
+.pr-main > .lobby-center {
+  align-self: stretch;
+}
+
+/* ---------- The board ---------- */
+
+/*
+ * Square cards in a --pr-size grid. The whole board is capped by viewport
+ * height as well as width, so a 10x10 grid still fits on screen without
+ * scrolling — on a memory game, scrolling loses you the race.
+ */
+.pr-board {
+  display: grid;
+  grid-template-columns: repeat(var(--pr-size, 6), 1fr);
+  gap: clamp(3px, 0.6vw, 8px);
+  width: min(100%, calc(78vh - 4rem));
+  margin-inline: auto;
+}
+
+.pr-card {
+  position: relative;
+  /* Lets the symbol size itself from the card rather than the viewport. */
+  container-type: size;
+  container-name: prcard;
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: clamp(5px, 0.8vw, 10px);
+  cursor: pointer;
+}
+
+/*
+ * A face-up or matched card is a disabled <button>, and the browser's default
+ * disabled style sets a translucent grey text colour. Emoji are composited
+ * against that colour, so it bleaches them — this is what made every revealed
+ * symbol look faded. Pin the colour back to full-strength text.
+ */
+.pr-card:disabled {
+  cursor: default;
+  color: var(--text);
+  opacity: 1;
+  -webkit-text-fill-color: currentColor;
+}
+
+/* The element that actually turns. Perspective lives on the parent, or the
+   rotation collapses to a flat scale. */
+/* The element that actually turns. Perspective lives on the parent, or the
+   rotation collapses to a flat scale. */
+.pr-card-inner {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * The reveal is a plain cross-fade, not a 3D flip.
+ *
+ * A rotateY/backface-hidden layer is composited separately and resampled, and
+ * that pass visibly desaturates the emoji on it — a vivid blue wave rendered as
+ * a pale one, while the identical glyph outside the layer stayed vivid. Proven
+ * by placing the same emoji inside and outside such a layer side by side. The
+ * cross-fade keeps the symbol on an ordinary layer at full colour.
+ */
+.pr-front {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.pr-card.up .pr-front {
+  opacity: 1;
+  z-index: 2;
+}
+
+.pr-back {
+  transition: opacity 0.18s ease;
+}
+
+.pr-card.up .pr-back {
+  opacity: 0;
+}
+
+.pr-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  border: 1px solid var(--border);
+}
+
+.pr-back {
+  background: linear-gradient(160deg, #2a3148, #1b2033);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* A faint motif so the backs are not flat slabs. */
+.pr-back::after {
+  content: '';
+  position: absolute;
+  inset: 22%;
+  border-radius: 4px;
+  border: 2px solid rgba(157, 107, 255, 0.28);
+  transform: rotate(45deg);
+}
+
+.pr-card:not(:disabled):hover .pr-back {
+  border-color: rgba(157, 107, 255, 0.65);
+  background: linear-gradient(160deg, #333b57, #1f2540);
+}
+
+.pr-front {
+  /* A light card: emoji are drawn for light backgrounds. */
+  background: #f4f6fc;
+  border-color: rgba(157, 107, 255, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 14px rgba(157, 107, 255, 0.18);
+  /*
+   * Sized from the card, not the viewport. A viewport clamp left a 173px card
+   * showing a 46px glyph on small boards, which is what made the symbols look
+   * weak; 58% of the cell fills it properly at every board size.
+   */
+  font-size: 58cqmin;
+  line-height: 1;
+  /*
+   * Name the platform colour-emoji fonts explicitly. The body stack is a text
+   * font, so without this the browser substitutes whatever it can find, which
+   * on some systems is a flat monochrome fallback.
+   */
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji',
+    'Segoe UI Symbol', sans-serif;
+}
+
+/*
+ * The symbol itself.
+ *
+ * Nothing is painted over the glyph: a white text-shadow bleeds into the
+ * emoji's own detail and washes its colours out, which is what turned a red
+ * hull pink. The colours are simply pushed instead, on the glyph alone so the
+ * card behind it is untouched.
+ */
+.pr-symbol {
+  display: block;
+  /* Full-strength colour: emoji are painted against it, so a translucent
+     inherited colour washes them out. */
+  color: var(--text);
+  -webkit-text-fill-color: currentColor;
+  filter: saturate(1.15);
+}
+
+/*
+ * A found pair keeps the same dark face and is marked by a mint frame, rather
+ * than a pale fill. The pale fill was the fading: a light emoji on near-white
+ * mint had about 1.5:1 contrast, so the symbol all but disappeared.
+ */
+.pr-card.matched .pr-front {
+  /* Light enough to keep dark emoji readable, tinted enough to read as done. */
+  background: #e3f7ee;
+  border-color: rgba(35, 160, 106, 0.85);
+  box-shadow: inset 0 0 0 2px rgba(35, 160, 106, 0.35), 0 0 14px rgba(108, 245, 194, 0.22);
+}
+
+.pr-peek {
+  text-align: center;
+  color: var(--amber, #f5b544);
+}
+
+.pr-done {
+  text-align: center;
+}
+
+/* ---------- Rivals ---------- */
+
+.pr-standings h3 {
+  margin: 0 0 0.6rem;
+}
+
+.pr-racers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.pr-racer.offline {
+  opacity: 0.55;
+}
+
+.pr-racer-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.pr-racer-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.pr-racer.is-you .pr-racer-name {
+  color: var(--cyan);
+}
+
+.pr-place {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  color: var(--gold, #f2c879);
+}
+
+.pr-racer-score {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pr-bar {
+  height: 7px;
+  margin-top: 0.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.pr-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--violet), var(--cyan));
+  transition: width 0.35s ease;
+}
+
+.pr-bar-fill.done {
+  background: linear-gradient(90deg, var(--mint), var(--cyan));
+}
+
+.pr-racer-meta {
+  display: block;
+  margin-top: 0.15rem;
+}
+
+/* ---------- Lobby ---------- */
+
+.pr-lobby-players {
+  margin: 0.8rem 0;
+  text-align: left;
+}
+
+.pr-lobby-settings {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-front,
+  .pr-back,
+  .pr-bar-fill {
+    transition: none;
+  }
+}
+
+/* ---------- Final standings ---------- */
+
+.pr-results {
+  max-width: 620px;
+  margin: 1.4rem auto 0;
+  padding: 1.4rem 1.5rem 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  animation: pr-results-in 0.45s cubic-bezier(0.2, 1.2, 0.4, 1) both;
+}
+
+@keyframes pr-results-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.pr-results-head {
+  text-align: center;
+  margin-bottom: 1.1rem;
+}
+
+.pr-results-head h2 {
+  margin: 0 0 0.3rem;
+}
+
+.pr-winner-name {
+  color: var(--cyan);
+}
+
+.pr-result-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  counter-reset: place;
+}
+
+.pr-result {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.22);
+  animation: pr-row-in 0.4s ease both;
+}
+
+/* Stagger the rows so the standings land one by one. */
+.pr-result:nth-child(1) { animation-delay: 0.05s; }
+.pr-result:nth-child(2) { animation-delay: 0.12s; }
+.pr-result:nth-child(3) { animation-delay: 0.19s; }
+.pr-result:nth-child(4) { animation-delay: 0.26s; }
+.pr-result:nth-child(n + 5) { animation-delay: 0.33s; }
+
+@keyframes pr-row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+.pr-result.first {
+  border-color: rgba(242, 200, 121, 0.55);
+  background: linear-gradient(90deg, rgba(242, 200, 121, 0.14), rgba(0, 0, 0, 0.22));
+}
+
+.pr-result.is-you .pr-result-name {
+  color: var(--cyan);
+}
+
+.pr-result.unplaced {
+  opacity: 0.72;
+}
+
+.pr-result-place {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.pr-result.first .pr-result-place {
+  color: var(--gold, #f2c879);
+}
+
+.pr-result-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.pr-result-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+
+.pr-result-time {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* The quickest run of the race. */
+.pr-result-time.best {
+  color: var(--mint);
+}
+
+.pr-results-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pr-results,
+  .pr-result {
+    animation: none;
+  }
+}

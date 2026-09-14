@@ -1,0 +1,507 @@
+/* ---------- Bluff Dice ---------- */
+
+.bluffdice-lobby {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+/* ---------- Dice ---------- */
+
+.bluffdice-die {
+  --die-size: 44px;
+  --pip: 8px;
+  --die-bg: #f3f1f8;
+  --pip-color: #171a2a;
+  position: relative;
+  display: inline-grid;
+  width: var(--die-size);
+  height: var(--die-size);
+  padding: calc(var(--die-size) * 0.14);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  place-items: center;
+  background: var(--die-bg);
+  border-radius: calc(var(--die-size) * 0.22);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.18), 0 3px 8px rgba(0, 0, 0, 0.45);
+  vertical-align: middle;
+  flex: none;
+}
+
+.bluffdice-die-sm {
+  --die-size: 18px;
+  --pip: 3px;
+}
+
+.bluffdice-die-md {
+  --die-size: 36px;
+  --pip: 6px;
+}
+
+.bluffdice-die-lg {
+  --die-size: 64px;
+  --pip: 12px;
+}
+
+.bluffdice-die i {
+  display: block;
+  width: var(--pip);
+  height: var(--pip);
+  border-radius: 50%;
+  background: var(--pip-color);
+}
+
+/* Pip layouts by face: cells are numbered 1..9 across three rows. */
+.bluffdice-die.face-1 i {
+  grid-area: 2 / 2;
+}
+.bluffdice-die.face-2 i:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.bluffdice-die.face-2 i:nth-child(2) {
+  grid-area: 3 / 3;
+}
+.bluffdice-die.face-3 i:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.bluffdice-die.face-3 i:nth-child(2) {
+  grid-area: 2 / 2;
+}
+.bluffdice-die.face-3 i:nth-child(3) {
+  grid-area: 3 / 3;
+}
+.bluffdice-die.face-4 i:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.bluffdice-die.face-4 i:nth-child(2) {
+  grid-area: 1 / 3;
+}
+.bluffdice-die.face-4 i:nth-child(3) {
+  grid-area: 3 / 1;
+}
+.bluffdice-die.face-4 i:nth-child(4) {
+  grid-area: 3 / 3;
+}
+.bluffdice-die.face-5 i:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.bluffdice-die.face-5 i:nth-child(2) {
+  grid-area: 1 / 3;
+}
+.bluffdice-die.face-5 i:nth-child(3) {
+  grid-area: 2 / 2;
+}
+.bluffdice-die.face-5 i:nth-child(4) {
+  grid-area: 3 / 1;
+}
+.bluffdice-die.face-5 i:nth-child(5) {
+  grid-area: 3 / 3;
+}
+.bluffdice-die.face-6 i:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.bluffdice-die.face-6 i:nth-child(2) {
+  grid-area: 1 / 3;
+}
+.bluffdice-die.face-6 i:nth-child(3) {
+  grid-area: 2 / 1;
+}
+.bluffdice-die.face-6 i:nth-child(4) {
+  grid-area: 2 / 3;
+}
+.bluffdice-die.face-6 i:nth-child(5) {
+  grid-area: 3 / 1;
+}
+.bluffdice-die.face-6 i:nth-child(6) {
+  grid-area: 3 / 3;
+}
+
+.bluffdice-die.hidden {
+  --die-bg: var(--panel-2);
+  box-shadow: inset 0 0 0 1px var(--border-strong), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.bluffdice-die.wild {
+  --die-bg: #d9fff0;
+  --pip-color: #0c6b4a;
+  box-shadow: 0 0 0 2px rgba(108, 245, 194, 0.6), 0 0 18px rgba(108, 245, 194, 0.55), inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.bluffdice-die.hit {
+  --die-bg: #fff3c4;
+  --pip-color: #6b4a00;
+  box-shadow: 0 0 0 2px rgba(255, 210, 80, 0.8), 0 0 20px rgba(255, 210, 80, 0.55), inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.bluffdice-die.wild.hit {
+  --die-bg: #d9fff0;
+  --pip-color: #0c6b4a;
+  box-shadow: 0 0 0 2px rgba(108, 245, 194, 0.9), 0 0 22px rgba(108, 245, 194, 0.7), inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.bluffdice-die.pickable {
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+/* ---------- Table ---------- */
+
+.bluffdice-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bluffdice-seats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.bluffdice-seat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.9rem;
+  min-width: 150px;
+  flex: 1 1 150px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.bluffdice-seat.current {
+  border-color: rgba(56, 225, 255, 0.7);
+  box-shadow: 0 0 0 1px rgba(56, 225, 255, 0.4), 0 0 26px rgba(56, 225, 255, 0.3), var(--shadow);
+  transform: translateY(-2px);
+}
+
+.bluffdice-seat.out {
+  opacity: 0.5;
+}
+
+.bluffdice-seat.you {
+  border-color: rgba(157, 107, 255, 0.5);
+}
+
+.bluffdice-seat.you.current {
+  border-color: rgba(56, 225, 255, 0.7);
+}
+
+.bluffdice-seat.loser {
+  border-color: rgba(255, 77, 109, 0.7);
+  box-shadow: 0 0 20px rgba(255, 77, 109, 0.3), var(--shadow);
+}
+
+.bluffdice-seat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.bluffdice-seat-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bluffdice-seat-tags {
+  display: inline-flex;
+  gap: 0.25rem;
+  flex: none;
+}
+
+.bluffdice-seat-dice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 20px;
+  align-items: center;
+}
+
+.bluffdice-seat-count {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.bluffdice-seat-state {
+  font-size: 0.75rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bluffdice-seat.current .bluffdice-seat-state {
+  color: var(--cyan);
+}
+
+.bluffdice-seat.loser .bluffdice-seat-state {
+  color: var(--red);
+}
+
+/* Centre of the table */
+
+.bluffdice-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+
+.bluffdice-bid-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 999px;
+  background: rgba(157, 107, 255, 0.14);
+  border: 1px solid rgba(157, 107, 255, 0.55);
+  box-shadow: 0 0 30px rgba(157, 107, 255, 0.3);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.bluffdice-bid-chip .times {
+  color: var(--muted);
+  font-size: 1.4rem;
+}
+
+.bluffdice-bid-chip.empty {
+  font-size: 1.1rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-strong);
+  box-shadow: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.bluffdice-bid-by {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.bluffdice-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Hand */
+
+.bluffdice-hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.bluffdice-hand-dice {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.bluffdice-hand-label {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Turn panel */
+
+.bluffdice-turn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bluffdice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.bluffdice-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.bluffdice-stepper .btn {
+  width: 2.3rem;
+  padding: 0.45rem 0;
+  font-size: 1.1rem;
+}
+
+.bluffdice-stepper output {
+  min-width: 2.4rem;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.bluffdice-faces {
+  display: inline-flex;
+  gap: 0.4rem;
+}
+
+.bluffdice-face-btn {
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 2px;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+
+.bluffdice-face-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.bluffdice-face-btn.selected {
+  border-color: var(--cyan);
+  box-shadow: 0 0 14px rgba(56, 225, 255, 0.45);
+}
+
+.bluffdice-face-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.bluffdice-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: stretch;
+  min-width: 200px;
+}
+
+.btn.bluffdice-liar {
+  background: linear-gradient(135deg, var(--red) 0%, #b3123f 100%);
+  color: #fff;
+  border-color: transparent;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.85rem 1.4rem;
+  box-shadow: 0 0 26px rgba(255, 77, 109, 0.45);
+}
+
+.btn.bluffdice-liar:hover:not(:disabled) {
+  box-shadow: 0 0 36px rgba(255, 77, 109, 0.65);
+  filter: brightness(1.08);
+}
+
+.bluffdice-reason {
+  color: #ff8fa3;
+  font-size: 0.82rem;
+  min-height: 1.2em;
+}
+
+.bluffdice-clock {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bluffdice-clock .countdown {
+  font-size: 2rem;
+}
+
+.bluffdice-waiting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* Reveal */
+
+.bluffdice-summary {
+  text-align: center;
+  font-size: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bluffdice-summary strong {
+  font-family: var(--font-display);
+}
+
+.bluffdice-summary .verdict {
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.bluffdice-summary .verdict.stood {
+  color: var(--mint);
+}
+
+.bluffdice-summary .verdict.bluff {
+  color: var(--red);
+}
+
+.bluffdice-inline-die {
+  display: inline-block;
+  vertical-align: -0.35em;
+  margin: 0 0.15em;
+}
+
+/* Results */
+
+.bluffdice-results {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .bluffdice-lobby,
+  .bluffdice-turn {
+    grid-template-columns: 1fr;
+  }
+  .bluffdice-actions {
+    min-width: 0;
+  }
+  .bluffdice-seat {
+    min-width: 120px;
+    flex-basis: 120px;
+  }
+  .bluffdice-bid-chip {
+    font-size: 1.5rem;
+  }
+  .bluffdice-die-lg {
+    --die-size: 52px;
+    --pip: 10px;
+  }
+}

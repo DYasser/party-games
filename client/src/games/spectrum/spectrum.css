@@ -1,0 +1,590 @@
+/* ---------- Spectrum ---------- */
+
+.spectrum-lobby {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.spectrum-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.spectrum-main,
+.spectrum-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .spectrum-lobby,
+  .spectrum-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.turn-pill.spectrum-pill {
+  background: rgba(157, 107, 255, 0.15);
+  color: #d9c8ff;
+  border-color: rgba(157, 107, 255, 0.4);
+  box-shadow: 0 0 14px rgba(157, 107, 255, 0.2);
+}
+
+/* Stage: the card holding the bar and the round's main interaction */
+
+.spectrum-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+}
+
+.spectrum-kicker {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.spectrum-clue-heading {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.spectrum-clue {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  padding: 0.5rem 0;
+  color: var(--text);
+  text-shadow: 0 0 24px rgba(157, 107, 255, 0.45);
+  overflow-wrap: anywhere;
+}
+
+.spectrum-clue.small {
+  font-size: clamp(1.2rem, 3vw, 1.7rem);
+  padding: 0;
+  color: #d9c8ff;
+}
+
+.spectrum-clock-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.countdown.spectrum-countdown {
+  font-size: 2rem;
+}
+
+.spectrum-target-line {
+  text-align: center;
+  color: var(--muted);
+}
+
+.spectrum-target-line strong {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--mint);
+  text-shadow: 0 0 14px rgba(108, 245, 194, 0.5);
+}
+
+/* The bar */
+
+.spectrum-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.spectrum-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.spectrum-label {
+  max-width: 48%;
+  overflow-wrap: anywhere;
+}
+
+.spectrum-label.left {
+  color: #8fbcff;
+}
+
+.spectrum-label.right {
+  color: #ff8fa3;
+  text-align: right;
+}
+
+.spectrum-track-wrap {
+  position: relative;
+  height: 64px;
+  padding: 0;
+}
+
+.spectrum-track-wrap.has-markers {
+  height: 120px;
+}
+
+.spectrum-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 18px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--violet) 50%, var(--red) 100%);
+  box-shadow: 0 0 22px rgba(157, 107, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Marker box is inset by half the range thumb width so % positions line up with the needle. */
+.spectrum-markers {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  top: 0;
+  bottom: 0;
+}
+
+.spectrum-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 0;
+  pointer-events: none;
+}
+
+.spectrum-pin {
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  width: 4px;
+  height: 34px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+}
+
+.spectrum-marker.target .spectrum-pin {
+  width: 6px;
+  left: -3px;
+  height: 44px;
+  background: var(--mint);
+  box-shadow: 0 0 16px rgba(108, 245, 194, 0.9);
+}
+
+.spectrum-marker.you .spectrum-pin {
+  background: var(--cyan);
+  box-shadow: 0 0 12px rgba(56, 225, 255, 0.8);
+}
+
+.spectrum-marker.bot .spectrum-pin {
+  background: #d9c8ff;
+}
+
+.spectrum-marker-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--text);
+  background: rgba(11, 13, 20, 0.85);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.15rem 0.4rem;
+}
+
+.spectrum-marker-label em {
+  font-style: normal;
+  color: var(--mint);
+  font-family: var(--font-display);
+}
+
+.spectrum-marker.above .spectrum-marker-label {
+  bottom: calc(50% + 26px);
+}
+
+.spectrum-marker.below .spectrum-marker-label {
+  top: calc(50% + 26px);
+}
+
+.spectrum-marker.target .spectrum-marker-label {
+  color: var(--mint);
+  border-color: rgba(108, 245, 194, 0.5);
+}
+
+.spectrum-marker.you .spectrum-marker-label {
+  color: var(--cyan);
+  border-color: rgba(56, 225, 255, 0.5);
+}
+
+.spectrum-scale {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7rem;
+}
+
+/* The needle: a range input laid over the track */
+
+.spectrum-range {
+  position: absolute;
+  left: -9px;
+  width: calc(100% + 18px);
+  top: 0;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.spectrum-range:active {
+  cursor: grabbing;
+}
+
+.spectrum-range:focus {
+  outline: none;
+}
+
+.spectrum-range::-webkit-slider-runnable-track {
+  background: transparent;
+  height: 100%;
+}
+
+.spectrum-range::-moz-range-track {
+  background: transparent;
+  height: 100%;
+}
+
+.spectrum-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 52px;
+  margin-top: 6px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #ffffff, #cfd6ff);
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 16px rgba(56, 225, 255, 0.75), 0 4px 10px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+}
+
+.spectrum-range::-moz-range-thumb {
+  width: 18px;
+  height: 52px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #ffffff, #cfd6ff);
+  border: 2px solid var(--cyan);
+  box-shadow: 0 0 16px rgba(56, 225, 255, 0.75), 0 4px 10px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+}
+
+.spectrum-range:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}
+
+.spectrum-guesser {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.spectrum-guess-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.spectrum-guess-value {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.spectrum-guess-value strong {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.spectrum-locked-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(108, 245, 194, 0.45);
+  background: rgba(108, 245, 194, 0.1);
+  color: var(--mint);
+  font-weight: 600;
+}
+
+/* Clue form */
+
+.spectrum-clue-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.spectrum-clue-form input {
+  font-size: 1.1rem;
+}
+
+.spectrum-clue-form .small-text {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .spectrum-clue-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Side chips */
+
+.spectrum-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.spectrum-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.spectrum-chip.locked {
+  border-color: rgba(108, 245, 194, 0.45);
+  background: rgba(108, 245, 194, 0.08);
+}
+
+.spectrum-chip.offline .spectrum-chip-name {
+  opacity: 0.5;
+}
+
+.spectrum-chip-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spectrum-lock {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.spectrum-lock.on {
+  color: var(--mint);
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.spectrum-psychic-line {
+  margin: 0.75rem 0 0;
+}
+
+/* Reveal */
+
+.spectrum-results {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .spectrum-results {
+    grid-template-columns: 1fr;
+  }
+}
+
+.banner.spectrum-psychic-banner {
+  background: rgba(157, 107, 255, 0.14);
+  border: 1px solid rgba(157, 107, 255, 0.6);
+  box-shadow: 0 0 30px rgba(157, 107, 255, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.95rem;
+}
+
+.spectrum-next-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Ended */
+
+.spectrum-ended {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ---------- Scoring bands ---------- */
+
+/*
+ * The bands sit over the track, showing what each guess is worth. Only drawn
+ * for viewers already allowed to see the target — they pinpoint it exactly.
+ *
+ * Inset to match .spectrum-markers so a band edge lines up with the needle.
+ */
+.spectrum-bands {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  top: 50%;
+  height: 18px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.spectrum-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Each band is a solid colour so the steps read as distinct zones. */
+  border-left: 1px solid rgba(11, 13, 20, 0.55);
+  border-right: 1px solid rgba(11, 13, 20, 0.55);
+}
+
+/* Green at the bullseye through to grey at the edge: closer is better. */
+.spectrum-band.band-5 {
+  background: rgba(108, 245, 194, 0.92);
+}
+
+.spectrum-band.band-4 {
+  background: rgba(122, 214, 140, 0.82);
+}
+
+.spectrum-band.band-3 {
+  background: rgba(242, 200, 121, 0.78);
+}
+
+.spectrum-band.band-2 {
+  background: rgba(245, 155, 90, 0.72);
+}
+
+.spectrum-band.band-1 {
+  background: rgba(200, 120, 140, 0.6);
+}
+
+.spectrum-band-score {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #0b0d14;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/*
+ * The bullseye band is only 6% of the track wide and the target pin sits right
+ * on top of it, so its number is unreadable. Drop it — the legend names the
+ * colour, and the pin already marks the spot.
+ */
+.spectrum-band.band-5 .spectrum-band-score {
+  display: none;
+}
+
+/* ---------- Band legend ---------- */
+
+.spectrum-band-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.spectrum-band-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.spectrum-band-key-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.spectrum-band-key-swatch.band-5 {
+  background: rgba(108, 245, 194, 0.92);
+}
+
+.spectrum-band-key-swatch.band-4 {
+  background: rgba(122, 214, 140, 0.82);
+}
+
+.spectrum-band-key-swatch.band-3 {
+  background: rgba(242, 200, 121, 0.78);
+}
+
+.spectrum-band-key-swatch.band-2 {
+  background: rgba(245, 155, 90, 0.72);
+}
+
+.spectrum-band-key-swatch.band-1 {
+  background: rgba(200, 120, 140, 0.6);
+}

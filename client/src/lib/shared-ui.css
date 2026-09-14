@@ -1,0 +1,1347 @@
+/* =====================================================================
+   Shared UI pieces used across games: numeric settings fields and the
+   animated end-of-game podium.
+   ===================================================================== */
+
+/* ---------- NumberField: typed numeric settings ---------- */
+
+.numfield {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.numfield-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.numfield-control {
+  display: inline-flex;
+  align-items: stretch;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  max-width: 220px;
+}
+
+.numfield-control:focus-within {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(56, 225, 255, 0.18);
+}
+
+.numfield-control.invalid {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.18);
+}
+
+.numfield-step {
+  width: 2.4rem;
+  flex: 0 0 auto;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.numfield-step:hover:not(:disabled) {
+  background: rgba(157, 107, 255, 0.3);
+}
+
+.numfield-step:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.numfield-input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 3rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  padding: 0.5rem 0.25rem;
+  color: var(--text);
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.numfield-input:focus {
+  box-shadow: none;
+  border: none;
+}
+
+/* Hide native spinners; the stepper buttons replace them. */
+.numfield-input::-webkit-outer-spin-button,
+.numfield-input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.numfield-suffix {
+  display: inline-flex;
+  align-items: center;
+  padding-right: 0.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.numfield-hint {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.numfield-hint.warn {
+  color: #ff8fa3;
+}
+
+.numfield-readonly {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  padding: 0.5rem 0.2rem;
+}
+
+.numfield-readonly strong {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+/* A row of settings fields that wraps on small screens. */
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.25rem;
+}
+
+/* ---------- Podium: animated end-of-game results ---------- */
+
+.podium-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 0.5rem 0 0.25rem;
+  /*
+   * Visible, not hidden: the reaction picker pops above a player and emoji fly
+   * upward out of the podium. The confetti strip clips itself instead.
+   */
+  overflow: visible;
+}
+
+.podium-crown {
+  text-align: center;
+  animation: podium-drop 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+
+.podium-title {
+  margin: 0;
+  font-size: clamp(1.7rem, 5vw, 2.6rem);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: linear-gradient(90deg, #fff, #ffe9a8 45%, #f5b544);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 22px rgba(245, 181, 68, 0.45));
+}
+
+.podium-sub {
+  margin: 0.1rem 0 0;
+  color: var(--muted);
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+@keyframes podium-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.podium-stage {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 560px;
+  margin-top: 0.25rem;
+}
+
+.podium-block {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: podium-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes podium-rise {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.podium-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding-bottom: 0.5rem;
+  text-align: center;
+  min-width: 0;
+  width: 100%;
+  animation: podium-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+@keyframes podium-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.podium-medal {
+  font-size: 1.9rem;
+  line-height: 1;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+}
+
+.place-1 .podium-medal {
+  font-size: 2.5rem;
+  animation: podium-shine 2.4s ease-in-out 1.2s infinite;
+}
+
+@keyframes podium-shine {
+  0%,
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+  15% {
+    transform: rotate(-9deg) scale(1.1);
+  }
+  30% {
+    transform: rotate(9deg) scale(1.1);
+  }
+  45% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.podium-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.place-1 .podium-name {
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.podium-detail {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.podium-pillar {
+  width: 100%;
+  border-radius: 10px 10px 0 0;
+  border: 1px solid var(--border-strong);
+  border-bottom: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.15rem;
+  padding: 0.6rem 0.3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.podium-pillar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 55%);
+  pointer-events: none;
+}
+
+.podium-tall .podium-pillar {
+  height: 128px;
+  background: linear-gradient(180deg, rgba(245, 181, 68, 0.42), rgba(245, 181, 68, 0.12));
+  border-color: rgba(245, 181, 68, 0.65);
+  box-shadow: 0 0 34px rgba(245, 181, 68, 0.3);
+}
+
+.podium-mid .podium-pillar {
+  height: 96px;
+  background: linear-gradient(180deg, rgba(199, 210, 235, 0.35), rgba(199, 210, 235, 0.1));
+  border-color: rgba(199, 210, 235, 0.5);
+}
+
+.podium-short .podium-pillar {
+  height: 74px;
+  background: linear-gradient(180deg, rgba(205, 127, 80, 0.35), rgba(205, 127, 80, 0.1));
+  border-color: rgba(205, 127, 80, 0.5);
+}
+
+.podium-place {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.podium-tall .podium-place {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* The score is the hero number on the pillar. */
+.podium-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.05;
+  font-family: var(--font-display);
+  color: #fff;
+}
+
+.podium-score-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.podium-tall .podium-score-value {
+  font-size: 2.1rem;
+}
+
+.podium-unit {
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.podium-rest-score .podium-unit {
+  font-size: 0.7em;
+  color: var(--muted);
+}
+
+/* Confetti burst over the winner. */
+.podium-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.podium-confetti i {
+  position: absolute;
+  top: -14px;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: podium-fall 2.6s linear both;
+}
+
+@keyframes podium-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) rotate(0deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(420px) rotate(540deg);
+  }
+}
+
+/* Fourth place and below. */
+.podium-rest {
+  list-style: none;
+  margin: 0.35rem 0 0;
+  padding: 0.85rem 0 0;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.podium-rest li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  animation: podium-slide 0.4s ease both;
+}
+
+@keyframes podium-slide {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.podium-rest li.you {
+  border-color: rgba(56, 225, 255, 0.4);
+  background: rgba(56, 225, 255, 0.07);
+}
+
+.podium-rest-place {
+  font-family: var(--font-display);
+  color: var(--muted);
+  min-width: 1.4rem;
+  text-align: right;
+}
+
+.podium-rest-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podium-rest-detail {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.podium-rest-score {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Actions under a podium, e.g. Play again. */
+.podium-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  .podium-stage {
+    gap: 0.4rem;
+  }
+  .podium-medal {
+    font-size: 1.5rem;
+  }
+  .place-1 .podium-medal {
+    font-size: 2rem;
+  }
+  .podium-name {
+    font-size: 0.8rem;
+  }
+  .place-1 .podium-name {
+    font-size: 0.92rem;
+  }
+}
+
+/*
+ * The global reduced-motion rule sets `animation: none !important`, which would
+ * strip the `both` fill-mode these entrances rely on and leave them stuck at
+ * their starting opacity: 0. Restore a visible resting state, and drop the
+ * confetti entirely rather than freezing it mid-air.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .podium-crown,
+  .podium-block,
+  .podium-figure,
+  .podium-rest li {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .podium-confetti {
+    display: none;
+  }
+}
+
+/* =====================================================================
+   Celebration layer: reactions, awards, confetti cannon
+   ===================================================================== */
+
+.celebrate-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  animation: podium-slide 0.4s ease 1100ms both;
+}
+
+.celebrate-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.confetti-btn {
+  border-color: rgba(245, 181, 68, 0.5);
+}
+
+.confetti-btn:hover:not(:disabled) {
+  border-color: #f5b544;
+  box-shadow: 0 0 16px rgba(245, 181, 68, 0.3);
+}
+
+/*
+ * The credit is absolutely positioned so it cannot shove the button off-centre.
+ * As an inline sibling it shared the flex row, so the pair centred as a unit
+ * and the button drifted left the moment somebody fired the cannon.
+ */
+/*
+ * Centred by its own box rather than a transform.
+ *
+ * It used to sit at `left: 50%` with `translateX(-50%)`, but the entry
+ * animation also sets `transform`, which replaced that offset outright and left
+ * the text sitting a half-width to the right. Spanning the full row and
+ * text-aligning centre keeps it centred no matter what the animation does.
+ */
+.confetti-credit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.45rem);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  animation: credit-in 0.3s ease both;
+  pointer-events: none;
+}
+
+/* Like podium-drop, but without a horizontal component to fight. */
+@keyframes credit-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A full-screen burst anybody in the room can set off. */
+.confetti-burst {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 45;
+}
+
+.confetti-burst i {
+  position: absolute;
+  top: -16px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confetti-drop 2.4s cubic-bezier(0.3, 0.7, 0.6, 1) both;
+}
+
+@keyframes confetti-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) rotate(0deg);
+  }
+  6% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(105vh) rotate(720deg);
+  }
+}
+
+/* ---------- Reaction picker ---------- */
+
+.podium-figure,
+.podium-rest-react {
+  position: relative;
+}
+
+.podium-name.as-button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.podium-name.as-button:hover,
+.podium-name.as-button:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(157, 107, 255, 0.5);
+  outline: none;
+}
+
+.react-open {
+  padding: 0.2rem 0.45rem;
+  line-height: 1;
+}
+
+.reaction-picker {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.4rem);
+  transform: translateX(-50%);
+  z-index: 30;
+  width: max-content;
+  max-width: min(15rem, 80vw);
+  padding: 0.55rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-solid);
+  box-shadow: var(--shadow), 0 0 26px rgba(157, 107, 255, 0.25);
+  animation: picker-in 0.16s ease-out both;
+}
+
+/* Rows in the runner-up list are short; open downward there instead. */
+.podium-rest .reaction-picker {
+  bottom: auto;
+  top: calc(100% + 0.35rem);
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+@keyframes picker-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.podium-rest .reaction-picker {
+  animation-name: picker-in-plain;
+}
+
+@keyframes picker-in-plain {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reaction-picker-head {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reaction-picker-head strong {
+  color: var(--text);
+}
+
+.reaction-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+}
+
+.reaction-btn {
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0.35rem 0;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.reaction-btn:hover {
+  background: rgba(157, 107, 255, 0.25);
+  border-color: rgba(157, 107, 255, 0.6);
+  transform: translateY(-2px) scale(1.12);
+}
+
+.reaction-btn:active {
+  transform: scale(0.95);
+}
+
+.reaction-picker-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.66rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- Received reactions ---------- */
+
+.reaction-tally {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  justify-content: center;
+  margin-left: 0.3rem;
+}
+
+.reaction-tally-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  font-size: 0.8rem;
+  padding: 0.05rem 0.28rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+  animation: tally-pop 0.28s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+.reaction-tally-item em {
+  font-style: normal;
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+@keyframes tally-pop {
+  from {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ---------- Reactions in flight ---------- */
+
+.flying-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 25;
+}
+
+.flying-reaction {
+  position: absolute;
+  font-size: 1.7rem;
+  line-height: 1;
+  will-change: transform, opacity;
+  animation: reaction-fly 1.9s cubic-bezier(0.2, 0.6, 0.4, 1) both;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes reaction-fly {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.4) rotate(-12deg);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -14px) scale(1.35) rotate(6deg);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(calc(-50% + var(--drift, 0px)), -52px) scale(1) rotate(-4deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--drift, 0px) * 2), -110px) scale(0.85) rotate(10deg);
+  }
+}
+
+/* ---------- Awards ---------- */
+
+.award-list {
+  width: 100%;
+  max-width: 620px;
+}
+
+.award-heading {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+.award-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Two per row on wide screens, full width when alone on the last row. */
+.award-card {
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+
+.award-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: linear-gradient(140deg, rgba(245, 181, 68, 0.12), rgba(255, 255, 255, 0.03));
+  animation: podium-slide 0.45s ease both;
+}
+
+.award-emoji {
+  font-size: 1.5rem;
+  line-height: 1.1;
+  flex: 0 0 auto;
+}
+
+.award-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.award-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffe9a8;
+}
+
+.award-who {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.award-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Reactions still tally under reduced motion; only the flight is dropped. */
+@media (prefers-reduced-motion: reduce) {
+  .celebrate-bar,
+  .award-card,
+  .reaction-tally-item,
+  .reaction-picker {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .podium-rest .reaction-picker {
+    transform: none !important;
+  }
+
+  .reaction-picker {
+    transform: translateX(-50%) !important;
+  }
+
+  .flying-layer,
+  .confetti-burst {
+    display: none;
+  }
+}
+
+/* ---------- Modal: in-page dialogs ---------- */
+
+/*
+ * Portalled onto <body>, so this sits above every card regardless of the
+ * stacking contexts `.card`'s backdrop-filter creates further down the tree.
+ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.2rem;
+  /* Dim and blur the page so the dialog is unmistakably the focus. */
+  background: rgba(4, 5, 10, 0.78);
+  backdrop-filter: blur(8px) saturate(0.85);
+  -webkit-backdrop-filter: blur(8px) saturate(0.85);
+  animation: modal-fade 0.18s ease-out;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 420px;
+  max-height: min(86vh, 780px);
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(157, 107, 255, 0.12);
+  outline: none;
+  animation: modal-pop 0.2s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+.modal-panel.wide {
+  max-width: 560px;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+
+.modal-x {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.modal-x:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.modal-body {
+  padding: 1.1rem;
+  overflow-y: auto;
+}
+
+.modal-message {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.modal-note {
+  margin: 0 0 0.9rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: rgba(56, 225, 255, 0.08);
+  border: 1px solid rgba(56, 225, 255, 0.25);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.85rem 1.1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* A destructive confirm. */
+.btn.danger {
+  background: linear-gradient(135deg, var(--red), #c0264a);
+  color: #fff;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+.btn.danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 0 22px rgba(255, 77, 109, 0.45);
+}
+
+/* ---------- Game settings button ---------- */
+
+/*
+ * Fills its container and centres its contents. It used to be an inline button
+ * sitting in the top-left of a full-width card, which left a large empty gap
+ * beside it and read as a mistake.
+ */
+.settings-button {
+  display: flex;
+  /* Fills a narrow sidebar, but never stretches into a banner in a wide one. */
+  width: 100%;
+  max-width: 340px;
+  margin-inline: auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+.settings-gear {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.settings-button-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.3;
+}
+
+.settings-button-text em {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* Settings fields inside the dialog. */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem 1.2rem;
+}
+
+.settings-grid .numfield-control {
+  max-width: none;
+}
+
+/* A full-width row, for a checkbox or an explanation. */
+.settings-row-full {
+  grid-column: 1 / -1;
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+
+.settings-toggle input {
+  margin: 0.15rem 0 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--violet);
+  cursor: pointer;
+}
+
+.settings-toggle:hover {
+  border-color: var(--border-strong);
+}
+
+.settings-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.settings-toggle-text strong {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.settings-toggle-text span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.settings-toggle input:disabled {
+  cursor: not-allowed;
+}
+
+.settings-section-label {
+  grid-column: 1 / -1;
+  margin: 0.2rem 0 -0.4rem;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--violet);
+}
+
+/* ---------- Select: a themed replacement for the native dropdown ---------- */
+
+.pg-select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.6rem 0.7rem 0.6rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.pg-select:hover:not(:disabled) {
+  border-color: rgba(157, 107, 255, 0.5);
+}
+
+.pg-select:focus-visible,
+.pg-select.open {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(56, 225, 255, 0.18);
+}
+
+.pg-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pg-select-value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pg-select-arrow {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  color: var(--muted);
+  transition: transform 0.18s ease, color 0.15s ease;
+}
+
+.pg-select.open .pg-select-arrow {
+  transform: rotate(180deg);
+  color: var(--cyan);
+}
+
+/* The numeric variant, e.g. a clue count. */
+.pg-select.compact {
+  justify-content: center;
+  gap: 0.4rem;
+  /* Room for the arrow: a tighter box clipped it against the border. */
+  padding: 0.6rem 0.65rem;
+  min-width: 4.6rem;
+}
+
+.pg-select.compact .pg-select-arrow {
+  font-size: 0.62rem;
+}
+
+.pg-select.compact .pg-select-value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+/* ---------- The list ---------- */
+
+.pg-select-list {
+  z-index: 1100;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  overflow-y: auto;
+  background: var(--panel-solid);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(157, 107, 255, 0.12);
+  animation: pg-select-in 0.14s ease-out;
+}
+
+@keyframes pg-select-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pg-select-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: 0.45rem 1.6rem 0.45rem 0.65rem;
+  border-radius: 7px;
+  cursor: pointer;
+  line-height: 1.3;
+  /* No transition: hovering a long list should feel instant. */
+}
+
+.pg-select-option.active {
+  background: rgba(157, 107, 255, 0.22);
+}
+
+.pg-select-option.selected {
+  color: var(--cyan);
+}
+
+.pg-select-option.selected.active {
+  background: rgba(56, 225, 255, 0.2);
+}
+
+.pg-select-option.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pg-select-option-hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.pg-select-check {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: var(--cyan);
+}
+
+/* A compact list centres its values, matching its trigger. */
+.pg-select-list.compact .pg-select-option {
+  align-items: center;
+  padding: 0.4rem 0.65rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.pg-select-list.compact .pg-select-check {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pg-select-list {
+    animation: none;
+  }
+  .pg-select-arrow {
+    transition: none;
+  }
+}
+
+/*
+ * A sentinel value rendered as "∞". The real number stays in the input so
+ * typing and stepping still work; the symbol is painted over it, and slides
+ * out of the way as soon as the field is focused.
+ */
+.numfield-control {
+  position: relative;
+}
+
+.numfield-input.is-infinite {
+  /* Hide the digit without removing it from the DOM. */
+  color: transparent;
+}
+
+.numfield-infinity {
+  position: absolute;
+  left: 2.4rem;
+  right: 2.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--cyan);
+}

@@ -1,0 +1,543 @@
+/* =====================================================================
+   Nightfall — the dawn reveal
+   A victim's card floats, breaks, flips to show their role, then flies
+   off to join the rest of the dead in the roster.
+   ===================================================================== */
+
+.nf-dawn {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  /* The card is the only thing you can click (Skip); the rest is inert. */
+  pointer-events: none;
+}
+
+.nf-dawn-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(20, 10, 28, 0.72), rgba(4, 5, 10, 0.94));
+}
+
+.is-saved .nf-dawn-veil {
+  background: radial-gradient(circle at 50% 45%, rgba(10, 30, 26, 0.72), rgba(4, 8, 10, 0.94));
+  backdrop-filter: blur(7px);
+  animation: nf-dawn-veil-in 0.5s ease-out both;
+}
+
+@keyframes nf-dawn-veil-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.nf-dawn-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  /* Depth for the flip: without this the rotation looks flat. */
+  perspective: 1200px;
+}
+
+.nf-dawn-caption {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: opacity 0.5s ease;
+}
+
+.nf-dawn-caption strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.is-killed .nf-dawn-caption strong {
+  color: #ffb3c1;
+  text-shadow: 0 0 22px rgba(255, 77, 109, 0.5);
+}
+
+.is-saved .nf-dawn-caption strong {
+  color: var(--mint);
+  text-shadow: 0 0 22px rgba(108, 245, 194, 0.5);
+}
+
+.nf-dawn-caption.in {
+  animation: nf-dawn-caption-in 0.7s ease-out both;
+}
+
+.nf-dawn-caption.out {
+  opacity: 0.35;
+}
+
+@keyframes nf-dawn-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- The card ---------- */
+
+.nf-dawn-card {
+  position: relative;
+  width: 190px;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+}
+
+/* Stage 1: rise in and breathe, as though the body were still warm. */
+.nf-dawn-card.stage-float {
+  animation:
+    nf-dawn-rise 0.6s cubic-bezier(0.2, 1, 0.3, 1) both,
+    nf-dawn-breathe 2.4s ease-in-out 0.6s infinite;
+}
+
+@keyframes nf-dawn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes nf-dawn-breathe {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-0.6deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(0.6deg);
+  }
+}
+
+/* Stage 2 (killed): the card shudders and cracks. */
+.is-killed .nf-dawn-card.stage-impact {
+  animation: nf-dawn-shatter 0.8s ease-in-out both;
+}
+
+/* Stage 2 (saved): the card is knocked but holds firm. */
+.is-saved .nf-dawn-card.stage-impact {
+  animation: nf-dawn-brace 0.8s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes nf-dawn-brace {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.94) translateY(5px);
+  }
+  55% {
+    transform: scale(1.06) translateY(-4px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes nf-dawn-shatter {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  15% {
+    transform: translate(-7px, 2px) rotate(-2deg);
+  }
+  30% {
+    transform: translate(6px, -3px) rotate(2deg);
+  }
+  45% {
+    transform: translate(-5px, 3px) rotate(-1.5deg);
+  }
+  60% {
+    transform: translate(4px, -2px) rotate(1deg);
+  }
+  75% {
+    transform: translate(-2px, 1px) rotate(-0.5deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+/* The fracture line down the middle. */
+.nf-dawn-crack {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 46%,
+    rgba(255, 255, 255, 0.9) 49%,
+    rgba(255, 77, 109, 0.9) 50%,
+    rgba(255, 255, 255, 0.9) 51%,
+    transparent 54%
+  );
+  opacity: 0;
+  animation: nf-dawn-crack-flash 0.7s ease-out both;
+}
+
+@keyframes nf-dawn-crack-flash {
+  0% {
+    opacity: 0;
+    filter: blur(6px);
+  }
+  25% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(3px);
+  }
+}
+
+/* Two shards that fly apart as it breaks. */
+.nf-dawn-shard {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(165deg, rgba(255, 77, 109, 0.2), rgba(10, 8, 14, 0.5));
+  border: 1px solid rgba(255, 77, 109, 0.5);
+  opacity: 0;
+}
+
+.nf-dawn-shard.left {
+  left: 0;
+  border-radius: 12px 0 0 12px;
+  animation: nf-dawn-shard-left 0.7s ease-out both;
+}
+
+.nf-dawn-shard.right {
+  right: 0;
+  border-radius: 0 12px 12px 0;
+  animation: nf-dawn-shard-right 0.7s ease-out both;
+}
+
+@keyframes nf-dawn-shard-left {
+  0% {
+    opacity: 0;
+    transform: none;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-38px, 16px) rotate(-13deg);
+  }
+}
+
+@keyframes nf-dawn-shard-right {
+  0% {
+    opacity: 0;
+    transform: none;
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(38px, 16px) rotate(13deg);
+  }
+}
+
+/* ---------- The flip ---------- */
+
+/*
+ * The flip needs its own perspective. `perspective` on a distant ancestor is
+ * flattened by the intermediate transforms on .nf-dawn-card (the shake, the
+ * departure), which left rotateY() collapsing to a 2D matrix and the card
+ * never actually turning. Giving the wrapper its own perspective, and keeping
+ * the rotation on a child that carries no other transform, makes it real 3D.
+ */
+.nf-dawn-flip-space {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  perspective: 1100px;
+}
+
+.nf-dawn-flipper {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.nf-dawn-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* The reverse starts pre-rotated so it reads correctly once turned. */
+.nf-dawn-face.back {
+  transform: rotateY(180deg);
+}
+
+/*
+ * A full turn, landing on the FACE.
+ *
+ * The card spins a whole revolution so it reads as a real 3D flip, but it must
+ * finish showing the role — so the reverse is what faces the viewer at the end.
+ * Hence 540° (one and a half turns), not 360°: a full 360 would land back on
+ * the face-down side and throw the reveal away just as it arrived.
+ *
+ * The reverse is pre-rotated 180°, so at 540° it sits flat to the camera.
+ */
+.nf-dawn-card.stage-flip .nf-dawn-flipper,
+.nf-dawn-card.stage-depart .nf-dawn-flipper {
+  animation: nf-dawn-turn 1.4s cubic-bezier(0.45, 0.05, 0.2, 1) both;
+}
+
+@keyframes nf-dawn-turn {
+  0% {
+    transform: rotateY(0deg) scale(1);
+  }
+  35% {
+    /* Past the edge: the back is now coming into view. */
+    transform: rotateY(180deg) scale(1.12);
+  }
+  70% {
+    transform: rotateY(360deg) scale(1.12);
+  }
+  100% {
+    /* Settles showing the role. */
+    transform: rotateY(540deg) scale(1);
+  }
+}
+
+/* A pulse of light as the role comes into view. */
+.is-killed .nf-dawn-card.stage-flip::after {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 77, 109, 0.4), transparent 70%);
+  animation: nf-dawn-glow 1.4s ease-out both;
+}
+
+@keyframes nf-dawn-glow {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.is-saved .nf-dawn-card.stage-flip::after {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108, 245, 194, 0.4), transparent 70%);
+  animation: nf-dawn-glow 1.4s ease-out both;
+}
+
+/* ---------- The ward (saved) ---------- */
+
+/* A dome of light that flares as the blow lands. */
+.nf-dawn-ward {
+  position: absolute;
+  inset: -14%;
+  z-index: 6;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108, 245, 194, 0.32) 40%, transparent 70%);
+  animation: nf-dawn-ward-flare 0.8s ease-out both;
+}
+
+@keyframes nf-dawn-ward-flare {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+}
+
+/* An expanding ring, like the strike glancing off. */
+.nf-dawn-ward-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  border-radius: 14px;
+  border: 2px solid var(--mint);
+  box-shadow: 0 0 26px rgba(108, 245, 194, 0.7), inset 0 0 18px rgba(108, 245, 194, 0.35);
+  animation: nf-dawn-ward-ring 0.8s ease-out both;
+}
+
+@keyframes nf-dawn-ward-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.12);
+  }
+}
+
+/* The Healer's cross, stamped over the card for a beat. */
+.nf-dawn-ward-mark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 8;
+  width: 38px;
+  height: 38px;
+  /* Sits below the name rather than across it. */
+  margin: 2px 0 0 -19px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--mint), var(--mint)) center / 100% 9px no-repeat,
+    linear-gradient(var(--mint), var(--mint)) center / 9px 100% no-repeat;
+  border-radius: 5px;
+  filter: drop-shadow(0 0 14px rgba(108, 245, 194, 0.9));
+  animation: nf-dawn-ward-mark 0.8s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+
+@keyframes nf-dawn-ward-mark {
+  0% {
+    opacity: 0;
+    transform: scale(0.2) rotate(-35deg);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15) rotate(0deg);
+  }
+}
+
+/* ---------- Stage 4: away to the roster ---------- */
+
+/*
+ * The roster sits to the right on desktop, so the card sweeps that way,
+ * shrinking as it goes. On narrow screens the roster is below, so it drops
+ * instead (see the media query). Saved or killed, the card ends up back at
+ * the table — the difference is the mood, not the destination.
+ */
+.is-killed .nf-dawn-card.stage-depart {
+  animation: nf-dawn-depart 0.9s cubic-bezier(0.6, 0, 0.8, 0.4) both;
+}
+
+/*
+ * A saved card was never taken: it settles back into the table rather than
+ * being carried off to the graveyard, so it sinks and fades in place.
+ */
+.is-saved .nf-dawn-card.stage-depart {
+  animation: nf-dawn-return 0.9s cubic-bezier(0.5, 0, 0.75, 0.5) both;
+}
+
+@keyframes nf-dawn-return {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.03);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(34px) scale(0.72);
+  }
+}
+
+@keyframes nf-dawn-depart {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(4vw, -14px) scale(1.04);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(42vw, -4vh) scale(0.34);
+  }
+}
+
+.nf-dawn-skip {
+  pointer-events: auto;
+  opacity: 0.65;
+}
+
+.nf-dawn-skip:hover {
+  opacity: 1;
+}
+
+@media (max-width: 960px) {
+  .nf-dawn-card {
+    width: 160px;
+  }
+
+  /* The roster stacks underneath at this width, so send the card down. */
+  @keyframes nf-dawn-depart {
+    0% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+    30% {
+      opacity: 1;
+      transform: translateY(-16px) scale(1.04);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(46vh) scale(0.36);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The component bails out entirely, but guard the styles too. */
+  .nf-dawn {
+    display: none;
+  }
+}

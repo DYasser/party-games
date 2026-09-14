@@ -1,0 +1,748 @@
+/* ---------- Cipher Grid: win announcement ---------- */
+
+/*
+ * Cipher Grid ends when one team wins, so there is no score ranking and no
+ * podium. The existing win banner keeps its shape and team colour (.banner.red /
+ * .banner.blue in styles.css); this only gives it an entrance and a soft pulse
+ * so the win reads as a moment rather than a line of text appearing.
+ */
+
+.cg-win {
+  animation: cg-win-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes cg-win-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cg-win strong {
+  display: block;
+  font-size: 1.5rem;
+  animation: cg-win-title 0.5s ease 0.2s both;
+}
+
+@keyframes cg-win-title {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Team-coloured glow, breathing once the banner has settled. */
+.cg-win.red {
+  animation:
+    cg-win-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both,
+    cg-glow-red 2.8s ease-in-out 0.6s infinite;
+}
+
+.cg-win.blue {
+  animation:
+    cg-win-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both,
+    cg-glow-blue 2.8s ease-in-out 0.6s infinite;
+}
+
+@keyframes cg-glow-red {
+  0%,
+  100% {
+    box-shadow: 0 0 30px rgba(255, 77, 109, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 48px rgba(255, 77, 109, 0.5);
+  }
+}
+
+@keyframes cg-glow-blue {
+  0%,
+  100% {
+    box-shadow: 0 0 30px rgba(61, 139, 255, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 48px rgba(61, 139, 255, 0.5);
+  }
+}
+
+/* Reduced motion: show the banner fully, with a static glow. */
+@media (prefers-reduced-motion: reduce) {
+  .cg-win,
+  .cg-win.red,
+  .cg-win.blue,
+  .cg-win strong {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Cipher Grid: lobby host seat controls ---------- */
+
+/*
+ * The host can move anyone to any seat from the waiting room. This is a roster
+ * list rather than a grid: names are the scannable column and the dropdown sits
+ * flush right, so rows stay aligned however long a name is.
+ */
+
+.cg-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+  text-align: left;
+}
+
+.cg-roster-title {
+  display: block;
+  text-align: center;
+  margin-bottom: 0.2rem;
+}
+
+.cg-roster-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.7rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.cg-roster-row.offline .cg-roster-name {
+  opacity: 0.55;
+}
+
+.cg-roster-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cap the trigger so a long option label cannot stretch the row. */
+.cg-roster-row .cg-seat-select {
+  flex: 0 0 auto;
+  width: 11.5rem;
+  max-width: 55%;
+}
+
+/* Explanatory line under the two timer fields in the settings dialog. */
+.cg-settings-note {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 860px) {
+  /*
+   * Narrow rooms: let the name have the full width and drop the dropdown onto
+   * its own line at full width, rather than squeezing both onto one.
+   */
+  .cg-roster-row {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+  }
+
+  .cg-roster-name {
+    flex: 1 0 100%;
+  }
+
+  .cg-roster-row .cg-seat-select {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+  }
+}
+
+
+/* ---------- Lobby seating: the side panels are the drop zones ---------- */
+
+/*
+ * In the lobby each role block accepts a dropped player, so a team is filled by
+ * dragging onto the panel that already represents it. No second copy of the
+ * teams in the middle of the page.
+ */
+.role-block.droppable {
+  border-radius: var(--radius-sm);
+  padding: 0.4rem;
+  margin: -0.4rem;
+  border: 1px dashed transparent;
+  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* While a card is in hand, every zone reads as a target. */
+.role-block.droppable.armed {
+  border-color: rgba(157, 107, 255, 0.45);
+  cursor: pointer;
+}
+
+.role-block.droppable.over {
+  border-style: solid;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.team-panel.red .role-block.droppable.over {
+  border-color: var(--red);
+  background: rgba(255, 77, 109, 0.12);
+  box-shadow: inset 0 0 24px rgba(255, 77, 109, 0.14);
+}
+
+.team-panel.blue .role-block.droppable.over {
+  border-color: var(--blue);
+  background: rgba(61, 139, 255, 0.12);
+  box-shadow: inset 0 0 24px rgba(61, 139, 255, 0.14);
+}
+
+/*
+ * A draggable player.
+ *
+ * The lift on hover is the whole affordance: a row that only changes colour
+ * reads as a label, not as something you can pick up. Hovering raises the card
+ * off the panel, and picking it up raises it further and rings it in cyan, so
+ * it is obvious which card is in hand.
+ */
+.player-row.movable {
+  cursor: grab;
+  transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.player-row.movable:hover,
+.player-row.movable:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  border-color: rgba(157, 107, 255, 0.6);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+/* Picked up, waiting for a destination. */
+.player-row.lifted {
+  cursor: grabbing;
+  opacity: 0.85;
+  transform: translateY(-3px) scale(1.04);
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(56, 225, 255, 0.35), 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- The spectator bench ---------- */
+
+.cg-bench {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0.7rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong);
+  background: rgba(0, 0, 0, 0.25);
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.cg-bench.armed {
+  border-color: rgba(157, 107, 255, 0.45);
+  cursor: pointer;
+}
+
+.cg-bench.over {
+  border-style: solid;
+  border-color: var(--cyan);
+  background: rgba(56, 225, 255, 0.1);
+}
+
+.cg-bench-label {
+  font-family: var(--font-display);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.cg-bench-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* On the bench the cards are free-floating chips, as they were on the board. */
+.cg-bench-list .player-row {
+  flex: 0 1 auto;
+  min-width: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: var(--panel-2);
+}
+
+.cg-bench-empty {
+  font-size: 0.8rem;
+  color: rgba(139, 145, 168, 0.6);
+  font-style: italic;
+}
+
+/* The settings button sits under the bench. */
+.cg-lobby-settings {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.7rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-row.movable,
+  .role-block.droppable,
+  .cg-bench {
+    transition: none;
+  }
+  .player-row.movable:hover,
+  .player-row.lifted {
+    transform: none;
+  }
+}
+
+/* ---------- Turn countdown ---------- */
+
+/*
+ * Only rendered when the host enabled a timer. It sits inside the turn pill so
+ * the clock is read together with whose turn it is.
+ */
+.turn-clock {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.35);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* The last ten seconds pulse, so a turn never runs out unnoticed. */
+.turn-clock.urgent {
+  color: #ffd5dd;
+  background: rgba(255, 77, 109, 0.35);
+  animation: turn-clock-pulse 1s ease-in-out infinite;
+}
+
+@keyframes turn-clock-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .turn-clock.urgent {
+    animation: none;
+  }
+}
+
+/* ---------- Final standings podium ---------- */
+
+/*
+ * An actual podium: two columns whose blocks are different heights, the winner
+ * raised and crowned. It sits under the board rather than over it, because the
+ * revealed grid is half the fun of the post-game argument.
+ *
+ * The two columns are bottom-aligned so the steps share a floor line, which is
+ * what makes the height difference read as a ranking.
+ */
+.cg-podium {
+  position: relative;
+  display: grid;
+  /* Sized to the line-ups, not to half the page: full-width columns left big
+     empty areas beside the names. The grid itself shrinks to those columns and
+     is centred as a block, so the stage below can align to the steps. */
+  grid-template-columns: repeat(2, minmax(11rem, 15rem));
+  width: max-content;
+  max-width: 100%;
+  margin-inline: auto;
+  /* The steps butt together, the way a real podium's blocks do. A gap here
+     made them read as two separate cards rather than one structure. */
+  gap: 0;
+  align-items: end;
+  margin-top: 2.2rem;
+}
+
+/*
+ * The stage the steps stand on.
+ *
+ * This is drawn as a element rather than a border so it can have depth: a lit
+ * top edge where the blocks meet it and a shadow falling away underneath. A
+ * plain hairline sitting below the steps just looked like a stray divider.
+ */
+.cg-podium::after {
+  content: '';
+  position: absolute;
+  left: -0.7rem;
+  right: -0.7rem;
+  bottom: -0.55rem;
+  height: 0.55rem;
+  border-radius: 0 0 6px 6px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.5);
+}
+
+.cg-pod {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Hug the content: the ranking lives in the step's height, not in a stretched
+     card with a void inside it. */
+  align-self: end;
+  gap: 0.35rem;
+  padding: 0.9rem 0.9rem 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  /* Outer corners only: the inner edges meet in the middle. */
+  background-clip: padding-box;
+  background: rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: cg-pod-rise 0.7s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+.cg-pod.red {
+  border-color: rgba(255, 77, 109, 0.45);
+}
+
+.cg-pod.blue {
+  border-color: rgba(61, 139, 255, 0.45);
+}
+
+.cg-pod.winner.red {
+  box-shadow: 0 0 30px rgba(255, 77, 109, 0.25);
+}
+
+.cg-pod.winner.blue {
+  box-shadow: 0 0 30px rgba(61, 139, 255, 0.25);
+}
+
+/* Losing side recedes rather than disappears: they still get their names read. */
+.cg-pod.loser {
+  opacity: 0.82;
+}
+
+@keyframes cg-pod-rise {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Congratulations ---------- */
+
+/* The crown drops in after the column has landed, then keeps bobbing. */
+.cg-pod-crown {
+  position: absolute;
+  top: -1.5rem;
+  font-size: 1.6rem;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.6));
+  animation: cg-crown-drop 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) 0.55s both,
+    cg-crown-bob 2.6s ease-in-out 1.15s infinite;
+}
+
+@keyframes cg-crown-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-22px) rotate(-25deg) scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0) scale(1);
+  }
+}
+
+@keyframes cg-crown-bob {
+  50% {
+    transform: translateY(-4px) rotate(3deg);
+  }
+}
+
+.cg-pod-medal {
+  font-size: 1.5rem;
+  line-height: 1;
+  animation: cg-medal-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) 0.4s both;
+}
+
+/* The gold medal keeps a slow shine; silver just sits there. */
+.cg-pod.winner .cg-pod-medal {
+  filter: drop-shadow(0 0 10px rgba(242, 200, 121, 0.55));
+}
+
+@keyframes cg-medal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.3) rotate(-40deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+/*
+ * Sparks fired from behind the winner's column. Positioned over the left half,
+ * which is where the winner always sits.
+ */
+.cg-pod-sparks {
+  position: absolute;
+  left: 25%;
+  top: 30%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cg-pod-sparks span {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--gold, #f2c879);
+  opacity: 0;
+  /* Fan the sparks out evenly, each on its own angle. */
+  transform: rotate(calc(var(--i) * 36deg));
+  animation: cg-spark 1.1s ease-out calc(0.5s + var(--i) * 0.035s) both;
+}
+
+.cg-pod-sparks span:nth-child(3n) {
+  background: var(--cyan);
+}
+
+.cg-pod-sparks span:nth-child(3n + 1) {
+  background: #fff;
+}
+
+@keyframes cg-spark {
+  0% {
+    opacity: 1;
+    transform: rotate(calc(var(--i) * 36deg)) translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(calc(var(--i) * 36deg)) translateX(130px) scale(0.2);
+  }
+}
+
+.cg-pod-rank {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cg-pod.winner .cg-pod-rank {
+  color: var(--gold, #f2c879);
+}
+
+.cg-pod-team {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.cg-pod.red .cg-pod-team {
+  color: #ff98ab;
+}
+
+.cg-pod.blue .cg-pod-team {
+  color: #9ec2ff;
+}
+
+.cg-pod-players {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cg-pod-players li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.86rem;
+}
+
+.cg-pod-players li.is-you .cg-pod-name {
+  color: var(--cyan);
+}
+
+.cg-pod-name {
+  font-weight: 600;
+}
+
+.cg-pod-role {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.cg-pod-empty {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: rgba(139, 145, 168, 0.6);
+}
+
+/* ---------- The step itself ---------- */
+
+/*
+ * This is the podium block. Its height is the ranking, so the two values below
+ * are the whole point of the component.
+ */
+.cg-pod-block {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100% + 1.8rem);
+  margin: 0.4rem -0.9rem 0;
+  border-radius: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  /* A lit top face and a darker body, so the step looks like a solid block
+     rather than a flat panel. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -18px 26px -18px rgba(0, 0, 0, 0.65);
+}
+
+.cg-pod.winner .cg-pod-block {
+  min-height: 7rem;
+}
+
+.cg-pod.loser .cg-pod-block {
+  min-height: 3.4rem;
+}
+
+.cg-pod.red .cg-pod-block {
+  background: linear-gradient(180deg, rgba(255, 77, 109, 0.22), rgba(255, 77, 109, 0.08));
+}
+
+.cg-pod.blue .cg-pod-block {
+  background: linear-gradient(180deg, rgba(61, 139, 255, 0.22), rgba(61, 139, 255, 0.08));
+}
+
+/* A big ghosted numeral on the face of the step. */
+.cg-pod-step {
+  position: absolute;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 4.2rem;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.07);
+  user-select: none;
+}
+
+.cg-pod-score {
+  position: relative;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cg-pod-unit {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+@media (max-width: 700px) {
+  .cg-podium {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    gap: 0.8rem;
+    /* Undo the shrink-wrap: stacked, each card should use the column width. */
+    width: auto;
+  }
+  .cg-pod {
+    align-self: stretch;
+  }
+  /* Stacked, the columns are separate cards again, so the stage makes no
+     sense and the outer corners come back. */
+  .cg-podium::after {
+    display: none;
+  }
+  .cg-pod {
+    border-radius: var(--radius);
+    border-bottom: 1px solid var(--border);
+  }
+  /* Stacked, the steps no longer share a floor, so equal heights read better. */
+  .cg-pod.winner .cg-pod-block,
+  .cg-pod.loser .cg-pod-block {
+    min-height: 3.4rem;
+  }
+  .cg-pod-sparks {
+    left: 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-pod,
+  .cg-pod-crown,
+  .cg-pod-medal,
+  .cg-pod-sparks span {
+    animation: none;
+  }
+  .cg-pod-crown,
+  .cg-pod-medal {
+    opacity: 1;
+  }
+  .cg-pod-sparks {
+    display: none;
+  }
+}
+
+/* ---------- Game log in the side column ---------- */
+
+.room-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* Beside the board the log needs its own scroll, or a long game stretches the
+   whole column past the board. */
+.room-side .game-log {
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 960px) {
+  .room-side .game-log {
+    max-height: none;
+  }
+}
+
+
+/* ---------- Folding the grid away after the game ---------- */
+
+/*
+ * Sits above the board so the control stays put whether the grid is open or
+ * closed: putting it underneath would make it jump up the page on every toggle.
+ */
+.cg-board-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.7rem;
+}
+
+.cg-podium-wrap {
+  position: relative;
+}

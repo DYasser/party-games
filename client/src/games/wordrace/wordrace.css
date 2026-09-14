@@ -1,0 +1,595 @@
+/* ---------- Word Race ---------- */
+
+.wordrace {
+  --wr-amber: #f5b544;
+}
+
+.wordrace-lobby {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.wordrace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1rem;
+  align-items: start;
+}
+
+.wordrace-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.wordrace-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.wordrace-clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 1.2rem;
+  width: 100%;
+}
+
+.wordrace-clock .countdown {
+  font-size: 2.2rem;
+}
+
+/* Board */
+
+.wordrace-board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+  width: min(100%, 340px);
+}
+
+.wordrace-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.wordrace-row.shake {
+  animation: wordrace-shake 0.4s ease;
+}
+
+.wordrace-tile {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.3rem, 5vw, 2rem);
+  text-transform: uppercase;
+  border: 2px solid var(--border-strong);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  user-select: none;
+}
+
+.wordrace-tile.typed {
+  border-color: rgba(255, 255, 255, 0.35);
+  animation: wordrace-pop 0.12s ease;
+}
+
+.wordrace-tile.g,
+.wordrace-tile.y,
+.wordrace-tile.x {
+  animation: wordrace-flip 0.5s ease both;
+}
+
+.wordrace-tile.g {
+  background: var(--mint);
+  border-color: var(--mint);
+  color: #06281c;
+  box-shadow: 0 0 14px rgba(108, 245, 194, 0.35);
+}
+
+.wordrace-tile.y {
+  background: var(--wr-amber);
+  border-color: var(--wr-amber);
+  color: #2b1d00;
+  box-shadow: 0 0 14px rgba(245, 181, 68, 0.3);
+}
+
+.wordrace-tile.x {
+  background: var(--panel-2);
+  border-color: var(--panel-2);
+  color: var(--muted);
+}
+
+.wordrace-tile.hidden {
+  color: transparent;
+}
+
+.wordrace-board.compact {
+  width: 100%;
+  max-width: 220px;
+  gap: 4px;
+}
+
+.wordrace-board.compact .wordrace-row {
+  gap: 4px;
+}
+
+.wordrace-board.compact .wordrace-tile {
+  font-size: 0.95rem;
+  border-radius: 5px;
+  border-width: 1px;
+}
+
+/* Reveal-time small boards with letters */
+
+.wordrace-board.compact .wordrace-tile.g,
+.wordrace-board.compact .wordrace-tile.y,
+.wordrace-board.compact .wordrace-tile.x {
+  animation: none;
+}
+
+@keyframes wordrace-flip {
+  0% {
+    transform: rotateX(0deg);
+    background: rgba(0, 0, 0, 0.25);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+  49% {
+    transform: rotateX(90deg);
+    background: rgba(0, 0, 0, 0.25);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+  51% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+@keyframes wordrace-pop {
+  from {
+    transform: scale(0.9);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes wordrace-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+/* Keyboard */
+
+.wordrace-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(100%, 520px);
+  user-select: none;
+}
+
+.wordrace-keyrow {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.wordrace-key {
+  flex: 1 1 0;
+  max-width: 46px;
+  min-width: 0;
+  height: 52px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.05s;
+  padding: 0;
+}
+
+.wordrace-key.wide {
+  flex: 1.6 1 0;
+  max-width: 78px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.wordrace-key:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.wordrace-key:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.wordrace-key:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.wordrace-key.g {
+  background: var(--mint);
+  border-color: var(--mint);
+  color: #06281c;
+}
+
+.wordrace-key.y {
+  background: var(--wr-amber);
+  border-color: var(--wr-amber);
+  color: #2b1d00;
+}
+
+.wordrace-key.x {
+  background: var(--panel-2);
+  border-color: var(--panel-2);
+  color: var(--muted);
+}
+
+/* Sidebar mini boards */
+
+.wordrace-mini {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem 0.75rem;
+  align-items: center;
+  padding: 0.6rem 0.7rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.wordrace-mini-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.wordrace-mini-head .player-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wordrace-mini-head .score {
+  font-family: var(--font-display);
+  color: var(--cyan);
+}
+
+.wordrace-squares {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, 14px);
+  grid-template-rows: repeat(6, 14px);
+  gap: 3px;
+}
+
+.wordrace-square {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+}
+
+.wordrace-square.g {
+  background: var(--mint);
+  border-color: var(--mint);
+}
+
+.wordrace-square.y {
+  background: var(--wr-amber);
+  border-color: var(--wr-amber);
+}
+
+.wordrace-square.x {
+  background: var(--panel-2);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.tag.wordrace-solved {
+  background: rgba(108, 245, 194, 0.15);
+  color: var(--mint);
+  border-color: rgba(108, 245, 194, 0.4);
+}
+
+.tag.wordrace-failed {
+  background: rgba(255, 77, 109, 0.15);
+  color: #ffb3c1;
+  border-color: rgba(255, 77, 109, 0.4);
+}
+
+.tag.wordrace-solving {
+  color: var(--muted);
+}
+
+/* Reveal */
+
+.wordrace-answer {
+  text-align: center;
+  padding: 1rem 1.2rem;
+}
+
+.wordrace-answer .word {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 9vw, 4rem);
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--mint);
+  text-shadow: 0 0 24px rgba(108, 245, 194, 0.55);
+  line-height: 1.1;
+}
+
+.wordrace-reveal-boards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.wordrace-reveal-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.wordrace-reveal-card.you {
+  border-color: rgba(157, 107, 255, 0.5);
+  box-shadow: 0 0 16px rgba(157, 107, 255, 0.2);
+}
+
+.wordrace-reveal-card .points {
+  font-family: var(--font-display);
+  color: var(--cyan);
+  font-size: 1.1rem;
+}
+
+.wordrace-reveal-card .points.zero {
+  color: var(--muted);
+}
+
+.wordrace-status-line {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 860px) {
+  .wordrace-lobby,
+  .wordrace-grid {
+    grid-template-columns: 1fr;
+  }
+  .wordrace-side {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .wordrace-side > .card {
+    flex: 1 1 100%;
+  }
+}
+
+/* ---------- Word source: language, custom list, list viewer ---------- */
+
+.wordrace-source {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.wordrace-source-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.wordrace-source-head h3 {
+  margin: 0;
+}
+
+.wordrace-mode {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 225, 255, 0.4);
+  background: rgba(56, 225, 255, 0.1);
+  color: var(--cyan);
+}
+
+.wordrace-mode.custom {
+  border-color: rgba(108, 245, 194, 0.45);
+  background: rgba(108, 245, 194, 0.12);
+  color: var(--mint);
+}
+
+.wordrace-lang .pg-select {
+  max-width: 260px;
+}
+
+.wordrace-source-stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.wordrace-source-stats strong {
+  font-family: var(--font-display);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.wordrace-source-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Custom list editor */
+
+.wordrace-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+.wordrace-custom-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 96px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  outline: none;
+}
+
+.wordrace-custom-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(56, 225, 255, 0.18);
+}
+
+.wordrace-check {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.wordrace-check p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.wordrace-ok {
+  color: var(--mint);
+}
+
+.wordrace-bad {
+  color: #ff8fa3;
+}
+
+/* Word chips */
+
+.wordrace-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.wordrace-chips.scroll {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 0.4rem;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.wordrace-chip {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0.18rem 0.45rem;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.wordrace-chip.ok {
+  border-color: rgba(108, 245, 194, 0.4);
+  background: rgba(108, 245, 194, 0.1);
+}
+
+.wordrace-chip.bad {
+  border-color: rgba(255, 77, 109, 0.4);
+  background: rgba(255, 77, 109, 0.1);
+  color: #ffb3c1;
+}
+
+.wordrace-chip.bad em {
+  font-style: normal;
+  opacity: 0.7;
+  font-size: 0.9em;
+  margin-left: 0.2rem;
+}
+
+.wordrace-chip.more {
+  color: var(--muted);
+  background: transparent;
+  border-style: dashed;
+}
+
+/* List viewer */
+
+.wordrace-wordlist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+.wordrace-wordlist-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.wordrace-wordlist-head input {
+  flex: 1;
+  min-width: 140px;
+  max-width: 220px;
+}

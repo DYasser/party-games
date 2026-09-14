@@ -1,0 +1,55 @@
+export interface Location {
+  name: string;
+  roles: string[];
+}
+
+/** Original locations for Infiltrator, each with roles handed to non-spy players. */
+export const LOCATIONS: readonly Location[] = [
+  { name: 'Aquarium', roles: ['Marine Biologist', 'Ticket Scanner', 'Shark Feeder', 'Field Trip Kid', 'Gift Shop Clerk', 'Diver', 'Tour Guide'] },
+  { name: 'Arcade', roles: ['Token Cashier', 'High-Score Champion', 'Birthday Kid', 'Machine Repairer', 'Prize Counter Clerk', 'Bored Parent', 'Claw Machine Addict'] },
+  { name: 'Bowling Alley', roles: ['Lane Attendant', 'League Bowler', 'Shoe Rental Clerk', 'Snack Bar Cook', 'Birthday Party Host', 'Gutter Ball Rookie', 'Pinsetter Mechanic'] },
+  { name: 'Campground', roles: ['Park Ranger', 'Scout Leader', 'Marshmallow Roaster', 'Tent Struggler', 'RV Owner', 'Firewood Seller', 'Ghost Story Teller'] },
+  { name: 'Coffee Shop', roles: ['Barista', 'Laptop Camper', 'Regular', 'Novelist', 'Delivery Courier', 'Manager', 'First-Date Couple'] },
+  { name: 'Comic Convention', roles: ['Cosplayer', 'Comic Artist', 'Panel Moderator', 'Collector', 'Booth Vendor', 'Volunteer', 'Celebrity Guest'] },
+  { name: 'Courtroom', roles: ['Judge', 'Defense Lawyer', 'Prosecutor', 'Witness', 'Juror', 'Court Reporter', 'Bailiff'] },
+  { name: 'Cruise Ship Buffet', roles: ['Head Chef', 'Carving Station Cook', 'Hungry Passenger', 'Waiter', 'Ice Sculptor', 'Kids Club Escapee', 'Cruise Director'] },
+  { name: 'Dentist Office', roles: ['Dentist', 'Hygienist', 'Nervous Patient', 'Receptionist', 'Kid Picking a Sticker', 'Dental Supplies Rep', 'Orthodontist'] },
+  { name: 'Dog Park', roles: ['Dog Walker', 'Frisbee Thrower', 'Puppy Owner', 'Poop Bag Volunteer', 'Trainer', 'Person Without a Dog', 'Runaway Dog Chaser'] },
+  { name: 'Escape Room', roles: ['Game Master', 'Puzzle Solver', 'Clue Hoarder', 'Panicking Teammate', 'Hint Requester', 'Birthday Guest', 'Lock Picker'] },
+  { name: 'Farmers Market', roles: ['Honey Vendor', 'Cheese Sampler', 'Flower Seller', 'Busker', 'Bargain Hunter', 'Organic Farmer', 'Food Truck Cook'] },
+  { name: 'Film Set', roles: ['Director', 'Lead Actor', 'Boom Operator', 'Stunt Double', 'Makeup Artist', 'Extra', 'Caterer'] },
+  { name: 'Fire Station', roles: ['Fire Chief', 'Rookie Firefighter', 'Dispatcher', 'Truck Mechanic', 'Station Cook', 'Visiting School Class', 'Station Dog Handler'] },
+  { name: 'Food Truck Festival', roles: ['Taco Truck Owner', 'Line Waiter', 'Food Blogger', 'Ticket Seller', 'Live Band', 'Napkin Runner', 'Health Inspector'] },
+  { name: 'Gym', roles: ['Personal Trainer', 'Front Desk Staff', 'Weightlifter', 'Treadmill Walker', 'Yoga Instructor', 'New Year Resolutioner', 'Locker Room Attendant'] },
+  { name: 'Haunted House Attraction', roles: ['Chainsaw Actor', 'Ticket Taker', 'Screaming Teenager', 'Fog Machine Operator', 'Makeup Artist', 'Brave Dad', 'Line Entertainer'] },
+  { name: 'Ice Cream Parlor', roles: ['Scooper', 'Flavor Sampler', 'Kid With a Cone', 'Cashier', 'Waffle Cone Maker', 'Sundae Enthusiast', 'Shop Owner'] },
+  { name: 'Karaoke Bar', roles: ['Host', 'Off-Key Singer', 'Bartender', 'Song Requester', 'Duet Partner', 'Sound Technician', 'Reluctant Coworker'] },
+  { name: 'Laundromat', roles: ['Attendant', 'Sock Loser', 'College Student', 'Coin Changer', 'Folding Expert', 'Detergent Borrower', 'Repair Technician'] },
+  { name: 'Mountain Ski Lodge', roles: ['Ski Instructor', 'Lift Operator', 'Hot Cocoa Server', 'Snowboarder', 'Injured Beginner', 'Lodge Manager', 'Snowplow Driver'] },
+  { name: 'Music Festival', roles: ['Headliner', 'Security Guard', 'Merch Seller', 'Camper', 'Sound Engineer', 'Lost Friend', 'Glow Stick Vendor'] },
+  { name: 'Newsroom', roles: ['Editor in Chief', 'Reporter', 'Anchor', 'Camera Operator', 'Weather Presenter', 'Intern', 'Fact Checker'] },
+  { name: 'Observatory', roles: ['Astronomer', 'Telescope Operator', 'Night Tour Guide', 'Grad Student', 'Amateur Stargazer', 'Planetarium Narrator', 'Security Guard'] },
+  { name: 'Pet Store', roles: ['Cashier', 'Fish Tank Cleaner', 'Puppy Cuddler', 'Reptile Expert', 'Kid Begging for a Hamster', 'Groomer', 'Delivery Driver'] },
+  { name: 'Recording Studio', roles: ['Producer', 'Sound Engineer', 'Vocalist', 'Session Drummer', 'Manager', 'Songwriter', 'Pizza Delivery Person'] },
+  { name: 'Rooftop Party', roles: ['DJ', 'Host', 'Photographer', 'Plus-One', 'Bartender', 'Neighbor Complaining', 'Person Afraid of Heights'] },
+  { name: 'Skate Park', roles: ['Skateboarder', 'BMX Rider', 'Scooter Kid', 'Filmer', 'Worried Parent', 'Park Supervisor', 'Bandaged Beginner'] },
+  { name: 'Spaceship Bridge', roles: ['Captain', 'Navigator', 'Engineer', 'Communications Officer', 'Android', 'Stowaway', 'Ship Doctor'] },
+  { name: 'Tattoo Parlor', roles: ['Tattoo Artist', 'First-Timer', 'Piercer', 'Receptionist', 'Cover-Up Client', 'Apprentice', 'Supportive Friend'] },
+  { name: 'Theme Park', roles: ['Ride Operator', 'Costumed Mascot', 'Churro Vendor', 'Line Skipper', 'Lost Child', 'Photographer', 'Roller Coaster Screamer'] },
+  { name: 'Thrift Store', roles: ['Cashier', 'Vintage Hunter', 'Donation Sorter', 'Costume Shopper', 'Book Browser', 'Store Manager', 'Furniture Hauler'] },
+  { name: 'Trivia Night', roles: ['Quiz Host', 'Know-It-All', 'Team Captain', 'Bartender', 'Phone Cheater', 'Tiebreaker Judge', 'Prize Sponsor'] },
+  { name: 'Underground Bunker', roles: ['Commander', 'Radio Operator', 'Canned Food Counter', 'Medic', 'Paranoid Survivor', 'Generator Mechanic', 'Newcomer'] },
+  { name: 'Video Game Tournament', roles: ['Pro Player', 'Commentator', 'Coach', 'Referee', 'Streamer', 'Sponsor Rep', 'Salty Loser'] },
+  { name: 'Wedding Reception', roles: ['Bride', 'Groom', 'Best Man', 'DJ', 'Caterer', 'Crying Aunt', 'Uninvited Ex'] },
+  { name: 'Wildlife Safari', roles: ['Safari Guide', 'Photographer', 'Jeep Driver', 'Tourist', 'Conservationist', 'Tracker', 'Camp Cook'] },
+  { name: 'Yoga Retreat', roles: ['Instructor', 'Meditation Guide', 'Smoothie Bar Staff', 'Stressed Executive', 'Influencer', 'Retreat Owner', 'Person Who Fell Asleep'] },
+  { name: 'Airport Security Line', roles: ['Screening Officer', 'Late Traveler', 'Family With Strollers', 'Business Traveler', 'Bag Checker', 'Confused Tourist', 'Frequent Flyer'] },
+  { name: 'Bookstore', roles: ['Bookseller', 'Café Barista', 'Author Doing a Signing', 'Cat', 'Study Group Student', 'Browser Not Buying', 'Store Owner'] },
+  { name: 'Cooking Competition', roles: ['Head Judge', 'Contestant', 'Host', 'Sous Chef', 'Pantry Runner', 'Camera Operator', 'Food Stylist'] },
+  { name: 'Hospital Emergency Room', roles: ['Triage Nurse', 'ER Doctor', 'Paramedic', 'Patient With a Sprain', 'Anxious Relative', 'Receptionist', 'Security Guard'] },
+  { name: 'Pirate Cove', roles: ['Captain', 'First Mate', 'Lookout', 'Cook', 'Treasure Digger', 'Parrot Keeper', 'Marooned Sailor'] },
+  { name: 'Subway Platform', roles: ['Commuter', 'Busker', 'Ticket Inspector', 'Station Announcer', 'Tourist With a Map', 'Cleaner', 'Sleeping Passenger'] },
+  { name: 'Zoo Nocturnal House', roles: ['Zookeeper', 'Night Tour Guide', 'Bat Researcher', 'Sleepy Toddler', 'Photographer', 'Snack Kiosk Worker', 'Veterinarian'] },
+];
+
+export const LOCATION_NAMES: readonly string[] = LOCATIONS.map((l) => l.name);
