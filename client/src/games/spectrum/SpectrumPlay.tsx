@@ -35,8 +35,8 @@ export default function SpectrumPlay({ room, act, socket }: Props) {
               <h2 className="spectrum-clue-heading muted">Waiting for {psychic?.name ?? 'the psychic'} to write a clue</h2>
             )}
             <SpectrumBar
-              left={round.spectrum.left}
-              right={round.spectrum.right}
+              left={round.spectrum?.left ?? null}
+              right={round.spectrum?.right ?? null}
               markers={round.target !== null ? [{ id: 'target', value: round.target, label: 'Target', kind: 'target' }] : []}
               bandsAround={round.target}
             />
@@ -67,8 +67,8 @@ export default function SpectrumPlay({ room, act, socket }: Props) {
             ) : (
               <>
                 <SpectrumBar
-                  left={round.spectrum.left}
-                  right={round.spectrum.right}
+                  left={round.spectrum?.left ?? null}
+                  right={round.spectrum?.right ?? null}
                   markers={round.target !== null ? [{ id: 'target', value: round.target, label: 'Target', kind: 'target' }] : []}
                   bandsAround={round.target}
                 />
@@ -111,6 +111,22 @@ export default function SpectrumPlay({ room, act, socket }: Props) {
 
         <section className="card">
           <h3>Scores</h3>
+
+          {/* In team mode the team totals decide the game, so they lead. */}
+          {state.settings.mode === 'teams' && (
+            <div className="spectrum-team-scores">
+              {(['red', 'blue'] as const).map((team) => (
+                <div
+                  key={team}
+                  className={`spectrum-team-score ${team} ${round?.team === team ? 'active' : ''}`}
+                >
+                  <span className="muted small-text">{team === 'red' ? 'Red' : 'Blue'}</span>
+                  <strong>{state.teamScores?.[team] ?? 0}</strong>
+                </div>
+              ))}
+            </div>
+          )}
+
           <ul className="score-list">
             {players
               .slice()
@@ -222,7 +238,7 @@ function Guesser({
 
   return (
     <div className={`spectrum-guesser ${locked ? 'locked' : ''}`}>
-      <SpectrumBar left={round.spectrum.left} right={round.spectrum.right} markers={markers}>
+      <SpectrumBar left={round.spectrum?.left ?? null} right={round.spectrum?.right ?? null} markers={markers}>
         {!locked && (
           <input
             className="spectrum-range"
@@ -303,8 +319,8 @@ function Reveal({ room, round, act, socket }: { room: SpectrumRoomView; round: R
         The target was <strong>{round.target}</strong>
       </div>
       <SpectrumBar
-        left={round.spectrum.left}
-        right={round.spectrum.right}
+        left={round.spectrum?.left ?? null}
+        right={round.spectrum?.right ?? null}
         markers={markers}
         bandsAround={round.target}
         className="revealed"

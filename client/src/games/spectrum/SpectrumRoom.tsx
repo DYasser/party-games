@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import { MAX_ROUNDS, MIN_PLAYERS, MIN_ROUNDS, type SpectrumRoomView } from '@shared/spectrum/types';
 import GameSettings from '../../lib/GameSettings';
 import NumberField from '../../lib/NumberField';
+import Select from '../../lib/Select';
 import Podium, { type PodiumEntry } from '../../lib/Podium';
 import { getSavedName, saveName, type AppSocket } from '../../lib/socket';
 import { useCelebration } from '../../lib/useCelebration';
@@ -165,7 +166,13 @@ function RoomInner({ code, name }: { code: string; name: string }) {
       </div>
 
       {state.phase === 'lobby' && (
-        <Lobby room={room} isHost={isHost} onSettings={(rounds) => act((ack) => socket.emit('spectrum:settings', { rounds }, ack))} />
+        <Lobby
+          room={room}
+          isHost={isHost}
+          onSettings={(patch) => act((ack) => socket.emit('spectrum:settings', patch, ack))}
+          onTeam={(playerId, team) => act((ack) => socket.emit('spectrum:team', { playerId, team }, ack))}
+          onShuffle={() => act((ack) => socket.emit('spectrum:shuffleTeams', ack))}
+        />
       )}
 
       {inRound && state.round && <SpectrumPlay room={room} act={act} socket={socket} />}
@@ -177,10 +184,23 @@ function RoomInner({ code, name }: { code: string; name: string }) {
   );
 }
 
-function Lobby({ room, isHost, onSettings }: { room: SpectrumRoomView; isHost: boolean; onSettings: (rounds: number) => void }) {
+function Lobby({
+  room,
+  isHost,
+  onSettings,
+  onTeam,
+  onShuffle,
+}: {
+  room: SpectrumRoomView;
+  isHost: boolean;
+  onSettings: (patch: { rounds?: number; mode?: string }) => void;
+  onTeam: (playerId: string, team: string | null) => void;
+  onShuffle: () => void;
+}) {
   const { players, you, state } = room;
   const connected = players.filter((p) => p.connected);
   const hasHuman = connected.some((p) => !p.isBot);
+  const mode = state.settings.mode;
 
   return (
     <div className="spectrum-lobby">
@@ -203,7 +223,27 @@ function Lobby({ room, isHost, onSettings }: { room: SpectrumRoomView; isHost: b
         {connected.length >= MIN_PLAYERS && !hasHuman && <p className="hint">At least one human is needed to be the psychic.</p>}
       </section>
 
-      <GameSettings isHost={isHost} summary={`${state.settings.rounds} rounds`}>
+      {mode === 'teams' && (
+        <TeamPicker room={room} isHost={isHost} onTeam={onTeam} onShuffle={onShuffle} />
+      )}
+
+      <GameSettings isHost={isHost} summary={`${MODE_LABEL[mode]} · ${state.settings.rounds} rounds`}>
+        <div className="numfield settings-row-full">
+          <span className="numfield-label">Game mode</span>
+          <Select
+            label="Game mode"
+            value={mode}
+            disabled={!isHost}
+            onChange={(v) => onSettings({ mode: v })}
+            options={[
+              { value: 'classic', label: 'Classic', hint: 'Both ends named' },
+              { value: 'blind', label: 'Blind', hint: 'Ends hidden — harder' },
+              { value: 'teams', label: 'Teams', hint: 'Two sides take turns' },
+            ]}
+          />
+          <span className="numfield-hint">{MODE_HINT[mode]}</span>
+        </div>
+
         <NumberField
           label="Rounds"
           value={state.settings.rounds}
@@ -211,7 +251,7 @@ function Lobby({ room, isHost, onSettings }: { room: SpectrumRoomView; isHost: b
           max={MAX_ROUNDS}
           suffix="rounds"
           disabled={!isHost}
-          onCommit={onSettings}
+          onCommit={(rounds) => onSettings({ rounds })}
         />
 
         <p className="muted small-text settings-row-full">
@@ -220,6 +260,140 @@ function Lobby({ room, isHost, onSettings }: { room: SpectrumRoomView; isHost: b
         </p>
       </GameSettings>
     </div>
+  );
+}
+
+/** One-line description of each mode, shown under the picker. */
+const MODE_LABEL: Record<string, string> = {
+  classic: 'Classic',
+  blind: 'Blind',
+  teams: 'Teams',
+};
+
+const MODE_HINT: Record<string, string> = {
+  classic: 'The two ends of the scale are named. Everyone guesses and scores for themselves.',
+  blind: 'The ends are never shown, not even to the psychic. The clue is the only information anyone has.',
+  teams: 'Two sides take turns. Only the psychic’s own team guesses, and their points go to the team.',
+};
+
+/**
+ * Team assignment for the lobby.
+ *
+ * Drag a player onto a side, or tap a player then tap a side — HTML5 drag does
+ * nothing on a touch screen, and the lobby has to work on a phone.
+ */
+function TeamPicker({
+  room,
+  isHost,
+  onTeam,
+  onShuffle,
+}: {
+  room: SpectrumRoomView;
+  isHost: boolean;
+  onTeam: (playerId: string, team: string | null) => void;
+  onShuffle: () => void;
+}) {
+  const { players, state } = room;
+  const [held, setHeld] = useState<string | null>(null);
+  const [over, setOver] = useState<string | null>(null);
+
+  const place = (playerId: string, team: string | null) => {
+    setHeld(null);
+    setOver(null);
+    if (!isHost) return;
+    if ((state.teams[playerId] ?? null) === team) return; // already there
+    onTeam(playerId, team);
+  };
+
+  const zone = (key: string, team: string | null) => ({
+    onDragOver: (e: React.DragEvent) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    },
+    onDragEnter: () => setOver(key),
+    onDragLeave: (e: React.DragEvent) => {
+      if (!(e.currentTarget as Node).contains(e.relatedTarget as Node)) setOver(null);
+    },
+    onDrop: (e: React.DragEvent) => {
+      e.preventDefault();
+      const id = e.dataTransfer.getData('text/plain') || held;
+      if (id) place(id, team);
+    },
+    onClick: (e: React.MouseEvent) => {
+      // A click already handled by a chip must not also drop it here.
+      if ((e.nativeEvent as MouseEvent & { chipHandled?: boolean }).chipHandled) return;
+      if (held) place(held, team);
+    },
+  });
+
+  const chip = (p: SpectrumRoomView['players'][number]) => (
+    <div
+      key={p.id}
+      className={`spectrum-team-chip ${isHost ? 'movable' : ''} ${held === p.id ? 'lifted' : ''}`}
+      draggable={isHost}
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/plain', p.id);
+        e.dataTransfer.effectAllowed = 'move';
+        setHeld(p.id);
+      }}
+      onDragEnd={() => {
+        setHeld(null);
+        setOver(null);
+      }}
+      onClick={(e) => {
+        (e.nativeEvent as MouseEvent & { chipHandled?: boolean }).chipHandled = true;
+        if (isHost) setHeld((cur) => (cur === p.id ? null : p.id));
+      }}
+    >
+      <span className="player-name">{p.name}</span>
+      {p.isBot && <span className="tag bot">bot</span>}
+    </div>
+  );
+
+  const side = (team: 'red' | 'blue') =>
+    players.filter((p) => p.connected && state.teams[p.id] === team);
+  const bench = players.filter((p) => p.connected && !state.teams[p.id]);
+
+  return (
+    <section className="card spectrum-teams">
+      <div className="spectrum-teams-head">
+        <h3>Teams</h3>
+        {isHost && (
+          <button className="btn small ghost" onClick={onShuffle}>
+            Shuffle
+          </button>
+        )}
+      </div>
+
+      <div className="spectrum-team-grid">
+        {(['red', 'blue'] as const).map((team) => (
+          <div
+            key={team}
+            className={`spectrum-team ${team} ${held ? 'armed' : ''} ${over === team ? 'over' : ''}`}
+            {...zone(team, team)}
+          >
+            <span className="spectrum-team-name">{team === 'red' ? 'Red' : 'Blue'}</span>
+            {side(team).map(chip)}
+            {side(team).length === 0 && (
+              <span className="muted small-text">{held ? 'Drop here' : 'Nobody yet'}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div
+        className={`spectrum-bench ${held ? 'armed' : ''} ${over === 'bench' ? 'over' : ''}`}
+        {...zone('bench', null)}
+      >
+        <span className="spectrum-team-name">Not playing</span>
+        {bench.map(chip)}
+        {bench.length === 0 && (
+          <span className="muted small-text">{held ? 'Drop here to bench them' : 'Everyone is on a side'}</span>
+        )}
+      </div>
+
+      {isHost && <p className="muted small-text">Drag a player onto a side, or tap them and then tap a side.</p>}
+    </section>
   );
 }
 

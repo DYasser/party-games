@@ -39,6 +39,11 @@ export default function SpectrumEntry() {
           </>,
         ]}
         notes={[
+          <Note k="Modes">
+            <strong>Classic</strong> names both ends of the scale. <strong>Blind</strong> hides them from everyone, the
+            psychic included, so the clue is all anyone has. <strong>Teams</strong> splits the room in two: the sides
+            take turns, only the psychic&apos;s own team guesses, and their points go to the team.
+          </Note>,
           <Note k="Length">The host types any number of rounds from 3 to 20. Highest total when they run out wins.</Note>,
           <Note k="Good clues">
             Aim for a specific example rather than a hedge. &ldquo;Pineapple on pizza&rdquo; beats &ldquo;fairly warm&rdquo;.

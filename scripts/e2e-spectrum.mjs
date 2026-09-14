@@ -181,6 +181,54 @@ assert(s.phase === 'lobby' && Object.keys(s.scores).length === 0, 'reset to lobb
 assert(s.settings.rounds === 3 && s.round === null, 'settings kept, round cleared');
 assert(latest.players.length === 4, 'players kept through reset');
 
+// ---- Blind mode: the ends must never reach a client mid-round ----
+await req(sock, 'spectrum:settings', { mode: 'blind' });
+await rejects(req(sock, 'spectrum:settings', { mode: 'chaos' }), 'unknown mode');
+await req(sock, 'spectrum:start');
+await settle();
+s = latest.state;
+assert(s.settings.mode === 'blind', 'blind mode set');
+assert(s.round.spectrum === null, 'blind: the psychic is not told the two ends');
+assert(s.round.target !== null, 'blind: the psychic still sees the target');
+console.log('blind round: spectrum hidden, target', s.round.target);
+
+await req(sock, 'spectrum:clue', { text: 'somewhere in the middle' });
+await waitFor((v) => v.state.phase === 'reveal', 'blind round reveal', 90_000);
+assert(latest.state.round.spectrum !== null, 'blind: ends revealed once scored');
+console.log('blind reveal shows the ends again');
+await req(sock, 'spectrum:reset');
+await settle();
+
+// ---- Team mode ----
+await req(sock, 'spectrum:settings', { mode: 'teams', rounds: 4 });
+await rejects(req(sock, 'spectrum:start'), 'team start with nobody assigned');
+
+await req(sock, 'spectrum:shuffleTeams');
+await settle();
+s = latest.state;
+const sides = Object.values(s.teams);
+assert(sides.length === 4, 'shuffle put everyone on a side');
+assert(sides.filter((t) => t === 'red').length === 2, 'teams split evenly');
+
+await req(sock, 'spectrum:team', { playerId: hostId, team: 'red' });
+await settle();
+assert(latest.state.teams[hostId] === 'red', 'host moved to red');
+
+// Blue ends up all bots, so it has no human to give a clue.
+{
+  const botIdsOnly = latest.players.filter((p) => p.id !== hostId).map((p) => p.id);
+  await req(sock, 'spectrum:team', { playerId: botIdsOnly[0], team: 'red' });
+  await req(sock, 'spectrum:team', { playerId: botIdsOnly[1], team: 'blue' });
+  await req(sock, 'spectrum:team', { playerId: botIdsOnly[2], team: 'blue' });
+  await settle();
+}
+await rejects(req(sock, 'spectrum:start'), 'team start with a side that cannot give clues');
+console.log('team mode guards a side with no human');
+
+await req(sock, 'spectrum:reset');
+await settle();
+assert(latest.state.phase === 'lobby', 'back to lobby after the team checks');
+
 console.log('\nSPECTRUM E2E PASSED');
 sock.disconnect();
 process.exit(0);

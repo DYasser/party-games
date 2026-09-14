@@ -23,8 +23,9 @@ const BANDS = [
 ] as const;
 
 interface Props {
-  left: string;
-  right: string;
+  /** Null in blind mode, where the two ends are never revealed. */
+  left: string | null;
+  right: string | null;
   markers?: BarMarker[];
   /**
    * Show the scoring bands around this value (0-100). Only pass it when the
@@ -54,8 +55,14 @@ export default function SpectrumBar({
   return (
     <div className={`spectrum-bar ${className}`}>
       <div className="spectrum-labels">
-        <span className="spectrum-label left">{left}</span>
-        <span className="spectrum-label right">{right}</span>
+        {left === null && right === null ? (
+          <span className="spectrum-label blind">Blind round — the clue is all you get</span>
+        ) : (
+          <>
+            <span className="spectrum-label left">{left}</span>
+            <span className="spectrum-label right">{right}</span>
+          </>
+        )}
       </div>
       <div className={`spectrum-track-wrap ${markers.length ? 'has-markers' : ''} ${hasTarget ? 'has-target' : ''}`}>
         <div className="spectrum-track" aria-hidden="true" />

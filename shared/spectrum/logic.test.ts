@@ -16,6 +16,9 @@ import {
   revealTimeUp,
   setGuess,
   setSettings,
+  setTeam,
+  shuffleTeams,
+  teamsReady,
   skipPsychic,
   startGame,
   startRound,
@@ -37,7 +40,7 @@ const players: BasePlayer[] = [human('a'), human('b'), human('c'), bot('bot1')];
 const T0 = 1_000_000;
 
 function fresh(seed = 1, roster = players) {
-  return startGame(setSettings(initialState(), 3), roster, T0, seeded(seed));
+  return startGame(setSettings(initialState(), { rounds: 3 }), roster, T0, seeded(seed));
 }
 
 /** Drive a fresh round to the guessing phase. */
@@ -57,14 +60,14 @@ describe('content', () => {
 
 describe('settings', () => {
   it('accepts 3-20 rounds and rejects the rest', () => {
-    expect(setSettings(initialState(), 5).settings.rounds).toBe(5);
-    expect(() => setSettings(initialState(), 2)).toThrow(/between 3 and 20/);
-    expect(() => setSettings(initialState(), 21)).toThrow();
-    expect(() => setSettings(initialState(), 4.5)).toThrow();
+    expect(setSettings(initialState(), { rounds: 5 }).settings.rounds).toBe(5);
+    expect(() => setSettings(initialState(), { rounds: 2 })).toThrow(/between 3 and 20/);
+    expect(() => setSettings(initialState(), { rounds: 21 })).toThrow();
+    expect(() => setSettings(initialState(), { rounds: 4.5 })).toThrow();
   });
 
   it('cannot change once the game has started', () => {
-    expect(() => setSettings(fresh(), 5)).toThrow(/lobby/);
+    expect(() => setSettings(fresh(), { rounds: 5 })).toThrow(/lobby/);
   });
 });
 
@@ -233,6 +236,110 @@ describe('guessing', () => {
     expect(Object.values(r.round!.points!).filter((p) => p === 0)).toHaveLength(2);
     // Psychic average only counts guessers who actually guessed.
     expect(r.round!.psychicPoints).toBe(4);
+  });
+});
+
+describe('game modes', () => {
+  const four: BasePlayer[] = [
+    { id: 'a', name: 'Ann', connected: true },
+    { id: 'b', name: 'Bob', connected: true },
+    { id: 'c', name: 'Cid', connected: true },
+    { id: 'd', name: 'Dee', connected: true },
+  ];
+
+  it('rejects an unknown mode and defaults to classic', () => {
+    expect(initialState().settings.mode).toBe('classic');
+    expect(setSettings(initialState(), { mode: 'blind' }).settings.mode).toBe('blind');
+    expect(() => setSettings(initialState(), { mode: 'chaos' })).toThrow(/mode/i);
+  });
+
+  it('blind mode hides the two ends from everyone, including the psychic', () => {
+    let s = setSettings(initialState(), { rounds: 3, mode: 'blind' });
+    s = startGame(s, four, T0, seeded(4));
+    const psychicId = s.round!.psychicId;
+    const guesserId = s.round!.guesserIds[0];
+
+    // Neither side is told what the scale means while the round is live.
+    expect(viewFor(s, psychicId, T0).round!.spectrum).toBeNull();
+    expect(viewFor(s, guesserId, T0).round!.spectrum).toBeNull();
+    // The psychic still sees the target: that is what they are describing.
+    expect(viewFor(s, psychicId, T0).round!.target).toBe(s.round!.target);
+
+    // Once the round is scored there is nothing left to protect.
+    s = giveClue(s, psychicId, 'halfway', T0);
+    s = lockGuess(setGuess(s, guesserId, 50), guesserId, T0);
+    for (const id of s.round!.guesserIds) {
+      if (!s.round!.guesses[id]?.locked) s = lockGuess(setGuess(s, id, 50), id, T0);
+    }
+    expect(s.phase).toBe('reveal');
+    expect(viewFor(s, guesserId, T0).round!.spectrum).not.toBeNull();
+  });
+
+  it('classic mode always shows the ends', () => {
+    const s = startGame(setSettings(initialState(), { rounds: 3 }), four, T0, seeded(4));
+    expect(viewFor(s, s.round!.guesserIds[0], T0).round!.spectrum).not.toBeNull();
+  });
+
+  it('team mode alternates sides and only the team on turn guesses', () => {
+    let s = setSettings(initialState(), { rounds: 4, mode: 'teams' });
+    s = setTeam(s, 'a', 'red');
+    s = setTeam(s, 'b', 'red');
+    s = setTeam(s, 'c', 'blue');
+    s = setTeam(s, 'd', 'blue');
+    s = startGame(s, four, T0, seeded(9));
+
+    expect(s.round!.team).toBe('red');
+    // Only red plays: the psychic and the guessers are all red.
+    expect(s.teams[s.round!.psychicId]).toBe('red');
+    expect(s.round!.guesserIds.every((id) => s.teams[id] === 'red')).toBe(true);
+
+    // Score the round, then the next one belongs to blue.
+    s = giveClue(s, s.round!.psychicId, 'clue', T0);
+    for (const id of s.round!.guesserIds) s = lockGuess(setGuess(s, id, s.round!.target), id, T0);
+    expect(s.phase).toBe('reveal');
+    expect(s.teamScores.red).toBeGreaterThan(0);
+    expect(s.teamScores.blue).toBe(0);
+
+    s = nextRound(s, four, T0, seeded(10));
+    expect(s.round!.team).toBe('blue');
+    expect(s.round!.guesserIds.every((id) => s.teams[id] === 'blue')).toBe(true);
+  });
+
+  it('will not start a team game with a side that cannot play', () => {
+    let s = setSettings(initialState(), { rounds: 3, mode: 'teams' });
+    s = setTeam(s, 'a', 'red');
+    s = setTeam(s, 'b', 'red');
+    s = setTeam(s, 'c', 'red');
+    s = setTeam(s, 'd', 'red');
+    // Everyone on one side: blue has nobody at all.
+    expect(teamsReady(s, four)).toMatch(/blue/i);
+    expect(() => startGame(s, four, T0, seeded(1))).toThrow(/blue/i);
+
+    // A side of one cannot both give the clue and guess.
+    let t = setSettings(initialState(), { rounds: 3, mode: 'teams' });
+    t = setTeam(t, 'a', 'red');
+    t = setTeam(t, 'b', 'red');
+    t = setTeam(t, 'c', 'red');
+    t = setTeam(t, 'd', 'blue');
+    expect(teamsReady(t, four)).toMatch(/two players/i);
+  });
+
+  it('shuffles everyone onto a side, and teams lock once running', () => {
+    let s = setSettings(initialState(), { rounds: 3, mode: 'teams' });
+    s = shuffleTeams(s, four, seeded(5));
+    expect(Object.keys(s.teams)).toHaveLength(4);
+    expect(Object.values(s.teams).filter((t) => t === 'red')).toHaveLength(2);
+    expect(Object.values(s.teams).filter((t) => t === 'blue')).toHaveLength(2);
+
+    const running = startGame(s, four, T0, seeded(6));
+    expect(() => setTeam(running, 'a', 'blue')).toThrow(/locked/i);
+    expect(() => shuffleTeams(running, four)).toThrow(/locked/i);
+  });
+
+  it('refuses team calls outside team mode', () => {
+    const classic = initialState();
+    expect(() => setTeam(classic, 'a', 'red')).toThrow(/team mode/i);
+    expect(() => shuffleTeams(classic, four)).toThrow(/team mode/i);
   });
 });
 

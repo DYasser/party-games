@@ -581,3 +581,165 @@
 .spectrum-band-key-swatch.band-1 {
   background: rgba(245, 155, 90, 0.72);
 }
+
+/* Blind mode: one centred note where the two end labels would be. */
+.spectrum-label.blind {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---------- Team picker (lobby, team mode) ---------- */
+
+.spectrum-teams-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.spectrum-teams-head h3 {
+  margin: 0;
+}
+
+.spectrum-team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin: 0.7rem 0 0.6rem;
+}
+
+@media (max-width: 620px) {
+  .spectrum-team-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.spectrum-team,
+.spectrum-bench {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border-strong);
+  background: rgba(0, 0, 0, 0.25);
+  min-height: 5rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.spectrum-team.red {
+  border-color: rgba(255, 77, 109, 0.45);
+}
+
+.spectrum-team.blue {
+  border-color: rgba(61, 139, 255, 0.45);
+}
+
+/* While a chip is held, every side reads as a target. */
+.spectrum-team.armed,
+.spectrum-bench.armed {
+  cursor: pointer;
+  border-color: rgba(157, 107, 255, 0.5);
+}
+
+.spectrum-team.over,
+.spectrum-bench.over {
+  border-style: solid;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.spectrum-team-name {
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.spectrum-team.red .spectrum-team-name {
+  color: #ff98ab;
+}
+
+.spectrum-team.blue .spectrum-team-name {
+  color: #9ec2ff;
+}
+
+.spectrum-team-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  font-size: 0.85rem;
+  transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.spectrum-team-chip.movable {
+  cursor: grab;
+}
+
+.spectrum-team-chip.movable:hover {
+  transform: translateY(-2px);
+  border-color: rgba(157, 107, 255, 0.6);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.spectrum-team-chip.lifted {
+  cursor: grabbing;
+  transform: translateY(-3px) scale(1.04);
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(56, 225, 255, 0.35);
+}
+
+/* ---------- Team scores during play ---------- */
+
+.spectrum-team-scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.spectrum-team-score {
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.spectrum-team-score.red {
+  border-color: rgba(255, 77, 109, 0.45);
+  background: rgba(255, 77, 109, 0.08);
+}
+
+.spectrum-team-score.blue {
+  border-color: rgba(61, 139, 255, 0.45);
+  background: rgba(61, 139, 255, 0.08);
+}
+
+/* The side taking this turn. */
+.spectrum-team-score.active {
+  box-shadow: 0 0 0 2px rgba(157, 107, 255, 0.4);
+}
+
+.spectrum-team-score strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spectrum-team-chip,
+  .spectrum-team,
+  .spectrum-bench {
+    transition: none;
+  }
+  .spectrum-team-chip.movable:hover,
+  .spectrum-team-chip.lifted {
+    transform: none;
+  }
+}

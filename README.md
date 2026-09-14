@@ -13,7 +13,8 @@ A website of original party games to play with friends across devices. Create a 
   infiltrator. Ask each other questions, accuse suspects, and vote before time runs out, while the infiltrator
   tries to work out where everyone is.
 - **Spectrum** – one player sees a hidden target on a scale between two extremes and gives a clue. Everyone else
-  places the dial. Closer guesses score more.
+  places the dial. Closer guesses score more. Three modes: *classic*, *blind* (the two extremes are never shown, so
+  the clue is all anyone has), and *teams* (two sides take turns, and only the psychic's own team guesses).
 - **One Word** – cooperative. One player guesses; everyone else writes a single-word hint. Identical hints cancel
   each other out before the guesser sees them.
 - **Nightfall** – hidden roles. Shades strike at night, the Oracle investigates, the Healer protects, and the town

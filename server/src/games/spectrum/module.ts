@@ -11,8 +11,11 @@ import {
   revealTimeUp,
   setGuess,
   setSettings,
+  setTeam,
+  shuffleTeams,
   skipPsychic,
   startGame,
+  teamsReady,
   viewFor,
 } from '../../../../shared/spectrum/logic.js';
 import type { SpectrumPlayer, SpectrumState } from '../../../../shared/spectrum/types.js';
@@ -132,10 +135,30 @@ export const spectrumModule: GameModule<SpectrumPlayer, SpectrumState> = {
   register(socket, { withRoom, requireHost, broadcast }) {
     const update = (room: SpecRoom, next: SpectrumState) => apply(room, next, broadcast);
 
-    socket.on('spectrum:settings', ({ rounds }, ack) =>
+    socket.on('spectrum:settings', (payload, ack) =>
       withRoom(ack, (room, player) => {
         requireHost(room, player);
-        update(room, setSettings(room.state, Number(rounds)));
+        const patch: { rounds?: number; mode?: unknown } = {};
+        if (payload?.rounds !== undefined) patch.rounds = Number(payload.rounds);
+        if (payload?.mode !== undefined) patch.mode = payload.mode;
+        update(room, setSettings(room.state, patch));
+      }),
+    );
+
+    socket.on('spectrum:team', (payload, ack) =>
+      withRoom(ack, (room, player) => {
+        requireHost(room, player);
+        const team = payload?.team;
+        // Anything that is not a side benches the player, rather than throwing.
+        const side = team === 'red' || team === 'blue' ? team : null;
+        update(room, setTeam(room.state, String(payload?.playerId ?? ''), side));
+      }),
+    );
+
+    socket.on('spectrum:shuffleTeams', (ack) =>
+      withRoom(ack, (room, player) => {
+        requireHost(room, player);
+        update(room, shuffleTeams(room.state, room.players));
       }),
     );
 

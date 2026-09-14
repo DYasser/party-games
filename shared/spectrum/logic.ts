@@ -13,6 +13,10 @@ import {
   type SpectrumRound,
   type SpectrumState,
   type SpectrumView,
+  isMode,
+  type SpectrumMode,
+  type SpectrumTeam,
+  MIN_TEAM_PLAYERS,
 } from './types.js';
 
 export type Rng = () => number;
@@ -28,21 +32,87 @@ const isHuman = (p: BasePlayer) => p.connected && !p.isBot;
 export function initialState(): SpectrumState {
   return {
     phase: 'lobby',
-    settings: { rounds: DEFAULT_ROUNDS },
+    settings: { rounds: DEFAULT_ROUNDS, mode: 'classic' },
     round: null,
     scores: {},
     roundsPlayed: 0,
     usedSpectra: [],
+    teams: {},
+    teamScores: { red: 0, blue: 0 },
   };
 }
 
-export function setSettings(state: SpectrumState, rounds: number): SpectrumState {
+export function setSettings(
+  state: SpectrumState,
+  patch: { rounds?: number; mode?: unknown },
+): SpectrumState {
   assert(state.phase === 'lobby', 'Settings can only change in the lobby.');
-  assert(
-    Number.isInteger(rounds) && rounds >= MIN_ROUNDS && rounds <= MAX_ROUNDS,
-    `Rounds must be between ${MIN_ROUNDS} and ${MAX_ROUNDS}.`,
-  );
-  return { ...state, settings: { ...state.settings, rounds } };
+  const next = { ...state.settings };
+
+  if (patch.rounds !== undefined) {
+    assert(
+      Number.isInteger(patch.rounds) && patch.rounds >= MIN_ROUNDS && patch.rounds <= MAX_ROUNDS,
+      `Rounds must be between ${MIN_ROUNDS} and ${MAX_ROUNDS}.`,
+    );
+    next.rounds = patch.rounds;
+  }
+
+  if (patch.mode !== undefined) {
+    assert(isMode(patch.mode), 'Unknown game mode.');
+    next.mode = patch.mode;
+  }
+
+  return { ...state, settings: next };
+}
+
+/**
+ * Put a player on a team, or take them off one. Team mode only, lobby only:
+ * sides cannot change once the game is running.
+ */
+export function setTeam(
+  state: SpectrumState,
+  playerId: string,
+  team: SpectrumTeam | null,
+): SpectrumState {
+  assert(state.phase === 'lobby', 'Teams are locked once the game starts.');
+  assert(state.settings.mode === 'teams', 'Teams are only used in team mode.');
+  const teams = { ...state.teams };
+  if (team === null) delete teams[playerId];
+  else teams[playerId] = team;
+  return { ...state, teams };
+}
+
+/** Split everyone connected between the two sides, alternating. */
+export function shuffleTeams(state: SpectrumState, players: BasePlayer[], rng: Rng = Math.random): SpectrumState {
+  assert(state.phase === 'lobby', 'Teams are locked once the game starts.');
+  assert(state.settings.mode === 'teams', 'Teams are only used in team mode.');
+  const pool = players.filter((p) => p.connected);
+  // Fisher-Yates, so repeated shuffles are not the same split every time.
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const teams: Record<string, SpectrumTeam> = {};
+  pool.forEach((p, i) => {
+    teams[p.id] = i % 2 === 0 ? 'red' : 'blue';
+  });
+  return { ...state, teams };
+}
+
+/**
+ * Why the room cannot start a team game yet, or null when it can.
+ *
+ * Each side needs a human to be psychic and at least one other player to guess
+ * for them, or a turn would have nobody to give or receive the clue.
+ */
+export function teamsReady(state: SpectrumState, players: BasePlayer[]): string | null {
+  for (const team of ['red', 'blue'] as SpectrumTeam[]) {
+    const side = players.filter((p) => p.connected && state.teams[p.id] === team);
+    const label = team === 'red' ? 'Red' : 'Blue';
+    if (!side.some(isHuman)) return `${label} team needs a human to give clues.`;
+    if (side.length < 2) return `${label} team needs at least two players.`;
+  }
+  return null;
 }
 
 /**
@@ -100,6 +170,8 @@ export function startRound(
   rng: Rng = Math.random,
   spectra: readonly Spectrum[] = SPECTRA,
 ): SpectrumState {
+  if (state.settings.mode === 'teams') return startTeamRound(state, players, rng, spectra);
+
   const psychic = nextPsychic(players, state.round?.psychicId ?? null);
   const guessers = players.filter((p) => p.connected && p.id !== psychic?.id);
   if (!psychic || guessers.length === 0) return { ...state, phase: 'ended' };
@@ -108,6 +180,49 @@ export function startRound(
   const round: SpectrumRound = {
     number: state.roundsPlayed + 1,
     psychicId: psychic.id,
+    team: null,
+    spectrum: spectra[index],
+    target: Math.min(100, Math.floor(rng() * 101)),
+    clue: null,
+    guesserIds: guessers.map((p) => p.id),
+    guesses: {},
+    guessEndsAt: null,
+    revealEndsAt: null,
+    points: null,
+    psychicPoints: null,
+  };
+  const scores = { ...state.scores };
+  for (const p of players) if (p.connected) scores[p.id] ??= 0;
+  return { ...state, phase: 'clue', round, scores, usedSpectra: used };
+}
+
+/**
+ * Deal a team round: the sides alternate, and only the team on turn plays.
+ *
+ * The psychic rotates within the team so the same person is not stuck giving
+ * every clue, and their own team-mates are the guessers — the other side sits
+ * the round out.
+ */
+function startTeamRound(
+  state: SpectrumState,
+  players: BasePlayer[],
+  rng: Rng,
+  spectra: readonly Spectrum[],
+): SpectrumState {
+  // Red opens; after that it is simply whoever did not go last.
+  const team: SpectrumTeam = state.round?.team === 'red' ? 'blue' : 'red';
+  const side = players.filter((p) => p.connected && state.teams[p.id] === team);
+
+  const psychic = nextPsychic(side, state.round?.psychicId ?? null);
+  const guessers = side.filter((p) => p.id !== psychic?.id);
+  // A side that has lost its people cannot take a turn, so the game is over.
+  if (!psychic || guessers.length === 0) return { ...state, phase: 'ended' };
+
+  const { index, used } = pickSpectrum(state, rng, spectra);
+  const round: SpectrumRound = {
+    number: state.roundsPlayed + 1,
+    psychicId: psychic.id,
+    team,
     spectrum: spectra[index],
     target: Math.min(100, Math.floor(rng() * 101)),
     clue: null,
@@ -135,7 +250,24 @@ export function startGame(
   const connected = players.filter((p) => p.connected);
   assert(connected.length >= MIN_PLAYERS, `Spectrum needs at least ${MIN_PLAYERS} players.`);
   assert(connected.some(isHuman), 'At least one human player is needed to be the psychic.');
-  const fresh: SpectrumState = { ...state, round: null, scores: {}, roundsPlayed: 0, usedSpectra: [] };
+
+  if (state.settings.mode === 'teams') {
+    assert(
+      connected.length >= MIN_TEAM_PLAYERS,
+      `Team mode needs at least ${MIN_TEAM_PLAYERS} players.`,
+    );
+    const problem = teamsReady(state, players);
+    assert(problem === null, problem ?? '');
+  }
+
+  const fresh: SpectrumState = {
+    ...state,
+    round: null,
+    scores: {},
+    roundsPlayed: 0,
+    usedSpectra: [],
+    teamScores: { red: 0, blue: 0 },
+  };
   return startRound(fresh, players, now, rng, spectra);
 }
 
@@ -219,9 +351,22 @@ export function reveal(state: SpectrumState, now: number): SpectrumState {
   const scores = { ...state.scores };
   for (const [id, pts] of Object.entries(points)) scores[id] = (scores[id] ?? 0) + pts;
   scores[round.psychicId] = (scores[round.psychicId] ?? 0) + psychicPoints;
+
+  /*
+   * In team mode the round's points go to the side that played it. Individual
+   * scores are still kept, so the results screen can show who carried a team,
+   * but the team total is what decides the game.
+   */
+  const teamScores = { ...state.teamScores };
+  if (round.team) {
+    const roundTotal = Object.values(points).reduce((a, b) => a + b, 0);
+    teamScores[round.team] = (teamScores[round.team] ?? 0) + roundTotal;
+  }
+
   return {
     ...state,
     phase: 'reveal',
+    teamScores,
     round: { ...round, points, psychicPoints, revealEndsAt: now + REVEAL_SECONDS * 1000 },
     scores,
     roundsPlayed: state.roundsPlayed + 1,
@@ -339,8 +484,15 @@ export function viewFor(state: SpectrumState, playerId: string, now: number): Sp
     for (const [id, g] of Object.entries(round.guesses)) {
       guesses[id] = { value: revealed || id === playerId ? g.value : null, locked: g.locked };
     }
+    /*
+     * Blind mode hides the two ends from everyone, the psychic included, until
+     * the reveal. It is stripped here rather than in the UI so the labels are
+     * never sent to a client that must not show them.
+     */
+    const hideEnds = state.settings.mode === 'blind' && !revealed;
     roundView = {
       ...round,
+      spectrum: hideEnds ? null : round.spectrum,
       isPsychic,
       target: isPsychic || revealed ? round.target : null,
       guesses,
@@ -352,6 +504,8 @@ export function viewFor(state: SpectrumState, playerId: string, now: number): Sp
     round: roundView,
     scores: state.scores,
     roundsPlayed: state.roundsPlayed,
+    teams: state.teams,
+    teamScores: state.teamScores,
     serverNow: now,
   };
 }
